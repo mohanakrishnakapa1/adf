@@ -1,0 +1,9 @@
+{
+	"name": "adf-practice-shine",
+	"location": "eastus",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "696c0af7-4c31-4b56-bc5d-5af0dc31e7a6",
+		"tenantId": "36a79846-e689-449f-8700-639ff74ca8fb"
+	}
+}

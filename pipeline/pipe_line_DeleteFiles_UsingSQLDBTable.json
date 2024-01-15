@@ -1,0 +1,94 @@
+{
+	"name": "pipe_line_DeleteFiles_UsingSQLDBTable",
+	"properties": {
+		"activities": [
+			{
+				"name": "Lookup_TogetFolders",
+				"type": "Lookup",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "AzureSqlSource",
+						"sqlReaderQuery": "select folder,type from  DELETE_map",
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "db_folders",
+						"type": "DatasetReference"
+					}
+				}
+			},
+			{
+				"name": "ForEach_To_GetAllValues",
+				"type": "ForEach",
+				"dependsOn": [
+					{
+						"activity": "Lookup_TogetFolders",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"items": {
+						"value": "@activity('Lookup_TogetFolders').output.value",
+						"type": "Expression"
+					},
+					"isSequential": true,
+					"activities": [
+						{
+							"name": "Delete1",
+							"type": "Delete",
+							"dependsOn": [],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [
+								{
+									"name": "FolderName"
+								}
+							],
+							"typeProperties": {
+								"dataset": {
+									"referenceName": "ToDeleteFilesBasedonTable",
+									"type": "DatasetReference",
+									"parameters": {
+										"FolderName": {
+											"value": "@item().folder",
+											"type": "Expression"
+										}
+									}
+								},
+								"enableLogging": true,
+								"storeSettings": {
+									"type": "AzureBlobStorageReadSettings",
+									"recursive": true,
+									"wildcardFileName": {
+										"value": "@item().type",
+										"type": "Expression"
+									},
+									"enablePartitionDiscovery": false
+								}
+							}
+						}
+					]
+				}
+			}
+		],
+		"annotations": []
+	}
+}

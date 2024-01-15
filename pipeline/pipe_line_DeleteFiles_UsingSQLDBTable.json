@@ -24,7 +24,8 @@
 					"dataset": {
 						"referenceName": "db_folders",
 						"type": "DatasetReference"
-					}
+					},
+					"firstRowOnly": false
 				}
 			},
 			{
@@ -57,11 +58,7 @@
 								"secureOutput": false,
 								"secureInput": false
 							},
-							"userProperties": [
-								{
-									"name": "FolderName"
-								}
-							],
+							"userProperties": [],
 							"typeProperties": {
 								"dataset": {
 									"referenceName": "ToDeleteFilesBasedonTable",
@@ -73,12 +70,19 @@
 										}
 									}
 								},
+								"logStorageSettings": {
+									"linkedServiceName": {
+										"referenceName": "ToDeleteFilesBasedonTableData",
+										"type": "LinkedServiceReference"
+									},
+									"path": "target"
+								},
 								"enableLogging": true,
 								"storeSettings": {
 									"type": "AzureBlobStorageReadSettings",
-									"recursive": true,
+									"recursive": false,
 									"wildcardFileName": {
-										"value": "@item().type",
+										"value": "@{item().type}",
 										"type": "Expression"
 									},
 									"enablePartitionDiscovery": false

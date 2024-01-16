@@ -11,6 +11,10 @@
 			"type": "secureString",
 			"metadata": "Secure string for 'connectionString' of 'AzureSqlDatabase1'"
 		},
+		"ExcelLoadingMultisheet_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'ExcelLoadingMultisheet'"
+		},
 		"ToDeleteFilesBasedonTableData_connectionString": {
 			"type": "secureString",
 			"metadata": "Secure string for 'connectionString' of 'ToDeleteFilesBasedonTableData'"
@@ -44,6 +48,9 @@
 					},
 					"AzureSqlDatabase1_connectionString": {
 						"value": "[parameters('AzureSqlDatabase1_connectionString')]"
+					},
+					"ExcelLoadingMultisheet_connectionString": {
+						"value": "[parameters('ExcelLoadingMultisheet_connectionString')]"
 					},
 					"ToDeleteFilesBasedonTableData_connectionString": {
 						"value": "[parameters('ToDeleteFilesBasedonTableData_connectionString')]"

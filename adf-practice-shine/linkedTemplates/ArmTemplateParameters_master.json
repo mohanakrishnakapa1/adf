@@ -8,6 +8,9 @@
 		"AzureSqlDatabase1_connectionString": {
 			"value": ""
 		},
+		"ExcelLoadingMultisheet_connectionString": {
+			"value": ""
+		},
 		"ToDeleteFilesBasedonTableData_connectionString": {
 			"value": ""
 		},

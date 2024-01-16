@@ -77,7 +77,7 @@
 		],
 		"parameters": {
 			"SheetName": {
-				"type": "string",
+				"type": "array",
 				"defaultValue": "['SheetName':'sales','SheetName':'dept_hr','SheetName':'dept_finance']"
 			}
 		},

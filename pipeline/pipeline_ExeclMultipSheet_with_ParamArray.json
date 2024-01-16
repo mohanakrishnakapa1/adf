@@ -66,8 +66,14 @@
 							],
 							"outputs": [
 								{
-									"referenceName": "db_folders",
-									"type": "DatasetReference"
+									"referenceName": "ExcelLoading_MultiSheet",
+									"type": "DatasetReference",
+									"parameters": {
+										"TableName": {
+											"value": "@item().SheetName",
+											"type": "Expression"
+										}
+									}
 								}
 							]
 						}
@@ -78,7 +84,17 @@
 		"parameters": {
 			"SheetName": {
 				"type": "array",
-				"defaultValue": "[{'SheetName':'sales'},{'SheetName':'dept_hr'},{'SheetName':'dept_finance'}]"
+				"defaultValue": [
+					{
+						"SheetName": "sales"
+					},
+					{
+						"SheetName": "dept_hr"
+					},
+					{
+						"SheetName": "dept_finance"
+					}
+				]
 			}
 		},
 		"annotations": []

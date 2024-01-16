@@ -21,10 +21,6 @@
 				"name": "type",
 				"type": "varchar"
 			}
-		],
-		"typeProperties": {
-			"schema": "dbo",
-			"table": "DELETE_map"
-		}
+		]
 	}
 }

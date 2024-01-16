@@ -1,0 +1,41 @@
+{
+	"name": "SalesTable",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "AzureSqlDatabase1",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "saleID",
+				"type": "nvarchar"
+			},
+			{
+				"name": "Date",
+				"type": "nvarchar"
+			},
+			{
+				"name": "country",
+				"type": "nvarchar"
+			},
+			{
+				"name": "item",
+				"type": "nvarchar"
+			},
+			{
+				"name": "qty",
+				"type": "nvarchar"
+			},
+			{
+				"name": "value",
+				"type": "nvarchar"
+			}
+		],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": "sales"
+		}
+	}
+}

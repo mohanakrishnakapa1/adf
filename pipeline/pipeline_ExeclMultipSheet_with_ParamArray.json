@@ -78,7 +78,7 @@
 		"parameters": {
 			"SheetName": {
 				"type": "array",
-				"defaultValue": "['SheetName':'sales','SheetName':'dept_hr','SheetName':'dept_finance']"
+				"defaultValue": "[{'SheetName':'sales'},{'SheetName':'dept_hr'},{'SheetName':'dept_finance'}]"
 			}
 		},
 		"annotations": []

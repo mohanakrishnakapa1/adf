@@ -1,0 +1,29 @@
+{
+	"name": "Param_Table",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "Param_SqlDatabase",
+			"type": "LinkedServiceReference",
+			"parameters": {
+				"DBName": "practiceshine",
+				"Uname": "adm",
+				"Pass": "Tanvi*9873"
+			}
+		},
+		"parameters": {
+			"Tab_Name": {
+				"type": "string"
+			}
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": {
+				"value": "@dataset().Tab_Name",
+				"type": "Expression"
+			}
+		}
+	}
+}

@@ -3,9 +3,6 @@
 	"type": "Microsoft.DataFactory/factories/linkedservices",
 	"properties": {
 		"parameters": {
-			"Domain": {
-				"type": "string"
-			},
 			"DBName": {
 				"type": "string"
 			},
@@ -19,7 +16,7 @@
 		"annotations": [],
 		"type": "AzureSqlDatabase",
 		"typeProperties": {
-			"connectionString": "Integrated Security=False;Encrypt=True;Connection Timeout=30;Data Source=@{linkedService().Domain};Initial Catalog=@{linkedService().DBName};User ID=@{linkedService().Uname};Password=@{linkedService().Pass}"
+			"connectionString": "Integrated Security=False;Encrypt=True;Connection Timeout=30;Data Source=practiceshine.database.windows.net;Initial Catalog=@{linkedService().DBName};User ID=@{linkedService().Uname};Password=@{linkedService().Pass}"
 		}
 	}
 }

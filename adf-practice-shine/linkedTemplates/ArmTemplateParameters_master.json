@@ -5,6 +5,9 @@
 		"factoryName": {
 			"value": "adf-practice-shine"
 		},
+		"AzureBlobStorage1_connectionString": {
+			"value": ""
+		},
 		"AzureSqlDatabase1_connectionString": {
 			"value": ""
 		},
@@ -14,8 +17,8 @@
 		"ToDeleteFilesBasedonTableData_connectionString": {
 			"value": ""
 		},
-		"AzureBlobStorage1_connectionString": {
-			"value": ""
+		"Param_SqlDatabase_connectionString": {
+			"value": "Integrated Security=False;Encrypt=True;Connection Timeout=30;Data Source=practiceshine.database.windows.net;Initial Catalog=@{linkedService().DBName};User ID=@{linkedService().Uname};Password=@{linkedService().Pass}"
 		},
 		"containerUri": {
 			"value": ""

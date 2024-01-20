@@ -7,6 +7,10 @@
 			"metadata": "Data Factory name",
 			"defaultValue": "adf-practice-shine"
 		},
+		"AzureBlobStorage1_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'AzureBlobStorage1'"
+		},
 		"AzureSqlDatabase1_connectionString": {
 			"type": "secureString",
 			"metadata": "Secure string for 'connectionString' of 'AzureSqlDatabase1'"
@@ -19,9 +23,10 @@
 			"type": "secureString",
 			"metadata": "Secure string for 'connectionString' of 'ToDeleteFilesBasedonTableData'"
 		},
-		"AzureBlobStorage1_connectionString": {
+		"Param_SqlDatabase_connectionString": {
 			"type": "secureString",
-			"metadata": "Secure string for 'connectionString' of 'AzureBlobStorage1'"
+			"metadata": "Secure string for 'connectionString' of 'Param_SqlDatabase'",
+			"defaultValue": "Integrated Security=False;Encrypt=True;Connection Timeout=30;Data Source=practiceshine.database.windows.net;Initial Catalog=@{linkedService().DBName};User ID=@{linkedService().Uname};Password=@{linkedService().Pass}"
 		},
 		"containerUri": {
 			"type": "string",
@@ -50,6 +55,9 @@
 					"factoryName": {
 						"value": "[parameters('factoryName')]"
 					},
+					"AzureBlobStorage1_connectionString": {
+						"value": "[parameters('AzureBlobStorage1_connectionString')]"
+					},
 					"AzureSqlDatabase1_connectionString": {
 						"value": "[parameters('AzureSqlDatabase1_connectionString')]"
 					},
@@ -59,8 +67,8 @@
 					"ToDeleteFilesBasedonTableData_connectionString": {
 						"value": "[parameters('ToDeleteFilesBasedonTableData_connectionString')]"
 					},
-					"AzureBlobStorage1_connectionString": {
-						"value": "[parameters('AzureBlobStorage1_connectionString')]"
+					"Param_SqlDatabase_connectionString": {
+						"value": "[parameters('Param_SqlDatabase_connectionString')]"
 					}
 				}
 			},

@@ -1,0 +1,38 @@
+{
+	"name": "ToCaptureBadRows",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "DelimitedDataset_Param",
+						"type": "DatasetReference"
+					},
+					"name": "source1"
+				}
+			],
+			"sinks": [],
+			"transformations": [
+				{
+					"name": "split1"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          saleID as integer,",
+				"          Date as string,",
+				"          country as string,",
+				"          item as string,",
+				"          qty as integer,",
+				"          value as integer",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> source1",
+				"source1 split(isNull(toDate(Date,'mm-dd-yyyy')),",
+				"     disjoint: false) ~> split1@(ErrorRows, GoodRows)"
+			]
+		}
+	}
+}

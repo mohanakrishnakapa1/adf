@@ -19,22 +19,21 @@
 		"type": "AzureSqlTable",
 		"schema": [
 			{
-				"name": "saleid",
+				"name": "empid",
 				"type": "int",
 				"precision": 10
 			},
 			{
-				"name": "saledate",
+				"name": "name",
 				"type": "varchar"
 			},
 			{
-				"name": "country",
+				"name": "state",
 				"type": "varchar"
 			},
 			{
-				"name": "item",
-				"type": "int",
-				"precision": 10
+				"name": "phoeno",
+				"type": "varchar"
 			},
 			{
 				"name": "value",

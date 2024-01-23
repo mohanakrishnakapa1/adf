@@ -1,0 +1,59 @@
+{
+	"name": "pip_Fixedlength_Record_seperation",
+	"properties": {
+		"activities": [
+			{
+				"name": "empdata_fixedlength",
+				"type": "ExecuteDataFlow",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataflow": {
+						"referenceName": "empdata_fixedlength",
+						"type": "DataFlowReference",
+						"datasetParameters": {
+							"source1": {
+								"Filename": {
+									"value": "@pipeline().parameters.Fname",
+									"type": "Expression"
+								}
+							},
+							"sinkemp": {
+								"Tab_Name": {
+									"value": "@pipeline().parameters.tal",
+									"type": "Expression"
+								}
+							}
+						}
+					},
+					"compute": {
+						"coreCount": 8,
+						"computeType": "General"
+					},
+					"traceLevel": "Fine"
+				}
+			}
+		],
+		"parameters": {
+			"Fname": {
+				"type": "string",
+				"defaultValue": "emp.csv"
+			},
+			"tal": {
+				"type": "string",
+				"defaultValue": "emp"
+			}
+		},
+		"folder": {
+			"name": "Parametertized"
+		},
+		"annotations": []
+	}
+}

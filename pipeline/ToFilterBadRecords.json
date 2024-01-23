@@ -24,6 +24,28 @@
 									"value": "@pipeline().parameters.Fname",
 									"type": "Expression"
 								}
+							},
+							"sink1": {
+								"Tab_Name": {
+									"value": "@pipeline().parameters.tbl",
+									"type": "Expression"
+								}
+							},
+							"sink2": {
+								"Tab_Name": {
+									"value": "@pipeline().parameters.tbl",
+									"type": "Expression"
+								}
+							}
+						},
+						"linkedServiceParameters": {
+							"sink1": {
+								"schemaLinkedService": {
+									"Tab_Name": {
+										"value": "@pipeline().parameters.tbl",
+										"type": "Expression"
+									}
+								}
 							}
 						}
 					},
@@ -39,6 +61,10 @@
 			"Fname": {
 				"type": "string",
 				"defaultValue": "salesDateCorrupted.csv"
+			},
+			"tbl": {
+				"type": "string",
+				"defaultValue": "sales_tbl"
 			}
 		},
 		"folder": {

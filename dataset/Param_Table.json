@@ -17,7 +17,33 @@
 		},
 		"annotations": [],
 		"type": "AzureSqlTable",
-		"schema": [],
+		"schema": [
+			{
+				"name": "saleid",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "saledate",
+				"type": "datetime",
+				"precision": 23,
+				"scale": 3
+			},
+			{
+				"name": "country",
+				"type": "varchar"
+			},
+			{
+				"name": "item",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "value",
+				"type": "int",
+				"precision": 10
+			}
+		],
 		"typeProperties": {
 			"schema": "dbo",
 			"table": {

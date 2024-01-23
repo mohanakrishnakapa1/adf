@@ -7,7 +7,8 @@
 		},
 		"parameters": {
 			"Filename": {
-				"type": "string"
+				"type": "string",
+				"defaultValue": "salesDateCorrupted.csv"
 			}
 		},
 		"annotations": [],
@@ -23,32 +24,26 @@
 			},
 			"columnDelimiter": ",",
 			"escapeChar": "\\",
-			"firstRowAsHeader": true,
+			"firstRowAsHeader": false,
 			"quoteChar": "\""
 		},
 		"schema": [
 			{
-				"name": "saleID",
 				"type": "String"
 			},
 			{
-				"name": "Date",
 				"type": "String"
 			},
 			{
-				"name": "country",
 				"type": "String"
 			},
 			{
-				"name": "item",
 				"type": "String"
 			},
 			{
-				"name": "qty",
 				"type": "String"
 			},
 			{
-				"name": "value",
 				"type": "String"
 			}
 		]

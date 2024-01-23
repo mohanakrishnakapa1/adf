@@ -12,7 +12,22 @@
 					"name": "source1"
 				}
 			],
-			"sinks": [],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "Param_Table",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				},
+				{
+					"dataset": {
+						"referenceName": "Param_Table",
+						"type": "DatasetReference"
+					},
+					"name": "sink2"
+				}
+			],
 			"transformations": [
 				{
 					"name": "split1"
@@ -20,10 +35,10 @@
 			],
 			"scriptLines": [
 				"source(output(",
-				"          saleID as integer,",
-				"          Date as string,",
+				"          SalesID as integer,",
+				"          Date as date,",
 				"          country as string,",
-				"          item as string,",
+				"          item as integer,",
 				"          qty as integer,",
 				"          value as integer",
 				"     ),",
@@ -31,7 +46,55 @@
 				"     validateSchema: false,",
 				"     ignoreNoFilesFound: false) ~> source1",
 				"source1 split(isNull(toDate(Date,'mm-dd-yyyy')),",
-				"     disjoint: false) ~> split1@(ErrorRows, GoodRows)"
+				"     disjoint: false) ~> split1@(ErrorRows, GoodRows)",
+				"split1@ErrorRows sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          saleid as integer,",
+				"          saledate as timestamp,",
+				"          country as string,",
+				"          item as integer,",
+				"          value as integer",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          saleid = SalesID,",
+				"          saledate = Date,",
+				"          country,",
+				"          item,",
+				"          value",
+				"     )) ~> sink1",
+				"split1@GoodRows sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          saleid as integer,",
+				"          saledate as timestamp,",
+				"          country as string,",
+				"          item as integer,",
+				"          value as integer",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          saleid = SalesID,",
+				"          saledate = Date,",
+				"          country,",
+				"          item,",
+				"          value",
+				"     )) ~> sink2"
 			]
 		}
 	}

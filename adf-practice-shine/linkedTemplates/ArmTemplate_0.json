@@ -19,14 +19,14 @@
 			"type": "secureString",
 			"metadata": "Secure string for 'connectionString' of 'ExcelLoadingMultisheet'"
 		},
-		"ToDeleteFilesBasedonTableData_connectionString": {
-			"type": "secureString",
-			"metadata": "Secure string for 'connectionString' of 'ToDeleteFilesBasedonTableData'"
-		},
 		"Param_SqlDatabase_connectionString": {
 			"type": "secureString",
 			"metadata": "Secure string for 'connectionString' of 'Param_SqlDatabase'",
 			"defaultValue": "Integrated Security=False;Encrypt=True;Connection Timeout=30;Data Source=practiceshine.database.windows.net;Initial Catalog=@{linkedService().DBName};User ID=@{linkedService().Uname};Password=@{linkedService().Pass}"
+		},
+		"ToDeleteFilesBasedonTableData_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'ToDeleteFilesBasedonTableData'"
 		}
 	},
 	"variables": {
@@ -96,19 +96,6 @@
 			"dependsOn": []
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/ToDeleteFilesBasedonTableData')]",
-			"type": "Microsoft.DataFactory/factories/linkedServices",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"annotations": [],
-				"type": "AzureBlobStorage",
-				"typeProperties": {
-					"connectionString": "[parameters('ToDeleteFilesBasedonTableData_connectionString')]"
-				}
-			},
-			"dependsOn": []
-		},
-		{
 			"name": "[concat(parameters('factoryName'), '/Param_SqlDatabase')]",
 			"type": "Microsoft.DataFactory/factories/linkedServices",
 			"apiVersion": "2018-06-01",
@@ -128,6 +115,19 @@
 				"type": "AzureSqlDatabase",
 				"typeProperties": {
 					"connectionString": "[parameters('Param_SqlDatabase_connectionString')]"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ToDeleteFilesBasedonTableData')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureBlobStorage",
+				"typeProperties": {
+					"connectionString": "[parameters('ToDeleteFilesBasedonTableData_connectionString')]"
 				}
 			},
 			"dependsOn": []
@@ -277,6 +277,46 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/DelimitedDataset_Param')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzureBlobStorage1",
+					"type": "LinkedServiceReference"
+				},
+				"parameters": {
+					"Filename": {
+						"type": "string"
+					}
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobStorageLocation",
+						"fileName": {
+							"value": "@dataset().Filename",
+							"type": "Expression"
+						},
+						"container": "input"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": false,
+					"quoteChar": "\""
+				},
+				"schema": [
+					{
+						"type": "String"
+					}
+				]
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/AzureBlobStorage1')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/ExcelLoading_MultiSheet')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
@@ -336,6 +376,63 @@
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/linkedServices/ToDeleteFilesBasedonTableData')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Param_Table')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "Param_SqlDatabase",
+					"type": "LinkedServiceReference",
+					"parameters": {
+						"DBName": "practiceshine",
+						"Uname": "adm",
+						"Pass": "Tanvi*9873"
+					}
+				},
+				"parameters": {
+					"Tab_Name": {
+						"type": "string"
+					}
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "empid",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "name",
+						"type": "varchar"
+					},
+					{
+						"name": "state",
+						"type": "varchar"
+					},
+					{
+						"name": "phoeno",
+						"type": "varchar"
+					},
+					{
+						"name": "value",
+						"type": "int",
+						"precision": 10
+					}
+				],
+				"typeProperties": {
+					"schema": "dbo",
+					"table": {
+						"value": "@dataset().Tab_Name",
+						"type": "Expression"
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/Param_SqlDatabase')]"
 			]
 		},
 		{
@@ -475,37 +572,50 @@
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/Param_Table')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
+			"name": "[concat(parameters('factoryName'), '/Delete_activity')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
 			"properties": {
-				"linkedServiceName": {
-					"referenceName": "Param_SqlDatabase",
-					"type": "LinkedServiceReference",
-					"parameters": {
-						"DBName": "practiceshine",
-						"Uname": "adm",
-						"Pass": "Tanvi*9873"
+				"activities": [
+					{
+						"name": "Delete_sales",
+						"type": "Delete",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [
+							{
+								"name": "ToDeleteSalesFile",
+								"value": "ToDeleteSalesFile"
+							}
+						],
+						"typeProperties": {
+							"dataset": {
+								"referenceName": "ToSalesData",
+								"type": "DatasetReference",
+								"parameters": {}
+							},
+							"enableLogging": false,
+							"storeSettings": {
+								"type": "AzureBlobStorageReadSettings",
+								"recursive": true,
+								"enablePartitionDiscovery": false
+							}
+						}
 					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
 				},
-				"parameters": {
-					"Tab_Name": {
-						"type": "string"
-					}
-				},
-				"annotations": [],
-				"type": "AzureSqlTable",
-				"schema": [],
-				"typeProperties": {
-					"schema": "dbo",
-					"table": {
-						"value": "@dataset().Tab_Name",
-						"type": "Expression"
-					}
-				}
+				"annotations": []
 			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/Param_SqlDatabase')]"
+				"[concat(variables('factoryId'), '/datasets/ToSalesData')]"
 			]
 		},
 		{

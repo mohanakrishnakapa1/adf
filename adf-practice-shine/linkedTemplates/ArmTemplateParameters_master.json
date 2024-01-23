@@ -14,11 +14,11 @@
 		"ExcelLoadingMultisheet_connectionString": {
 			"value": ""
 		},
-		"ToDeleteFilesBasedonTableData_connectionString": {
-			"value": ""
-		},
 		"Param_SqlDatabase_connectionString": {
 			"value": "Integrated Security=False;Encrypt=True;Connection Timeout=30;Data Source=practiceshine.database.windows.net;Initial Catalog=@{linkedService().DBName};User ID=@{linkedService().Uname};Password=@{linkedService().Pass}"
+		},
+		"ToDeleteFilesBasedonTableData_connectionString": {
+			"value": ""
 		},
 		"containerUri": {
 			"value": ""

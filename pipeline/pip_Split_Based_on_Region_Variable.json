@@ -1,0 +1,83 @@
+{
+	"name": "pip_Split_Based_on_Region_Variable",
+	"properties": {
+		"activities": [
+			{
+				"name": "ForEach1",
+				"type": "ForEach",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"items": {
+						"value": "@variables('Region')",
+						"type": "Expression"
+					},
+					"activities": [
+						{
+							"name": "Copy data1",
+							"type": "Copy",
+							"dependsOn": [],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"source": {
+									"type": "AzureSqlSource",
+									"sqlReaderQuery": {
+										"value": "@concat('select * from sales_tbl where region=''',item(),'''')",
+										"type": "Expression"
+									},
+									"queryTimeout": "02:00:00",
+									"partitionOption": "None"
+								},
+								"sink": {
+									"type": "BinarySink",
+									"storeSettings": {
+										"type": "AzureBlobStorageWriteSettings"
+									}
+								},
+								"enableStaging": false
+							},
+							"inputs": [
+								{
+									"referenceName": "Param_Table",
+									"type": "DatasetReference",
+									"parameters": {
+										"Tab_Name": "sales_tbl"
+									}
+								}
+							],
+							"outputs": [
+								{
+									"referenceName": "Param_Output_Pass_FileName",
+									"type": "DatasetReference",
+									"parameters": {
+										"File_Output": {
+											"value": "@item()",
+											"type": "Expression"
+										}
+									}
+								}
+							]
+						}
+					]
+				}
+			}
+		],
+		"variables": {
+			"Region": {
+				"type": "String",
+				"defaultValue": "[\"India\",\"USA\"]"
+			}
+		},
+		"folder": {
+			"name": "Variables_Region_FileSplit"
+		},
+		"annotations": []
+	}
+}

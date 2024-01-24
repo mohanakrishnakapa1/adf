@@ -1,5 +1,13 @@
 {
 	"name": "adf-practice-shine",
+	"properties": {
+		"globalParameters": {
+			"File_Name": {
+				"type": "string",
+				"value": "emp.csv"
+			}
+		}
+	},
 	"location": "eastus",
 	"identity": {
 		"type": "SystemAssigned",

@@ -92,7 +92,7 @@
 				"typeProperties": {
 					"source": {
 						"type": "AzureSqlSource",
-						"sqlReaderQuery": "select * from prd_src where\nlastmodifytime >='@{activity('Lkp_Old_waterMarkDate').output.firstRow.oldval}'\n\nand \nlastmodifytime <='@{activity('Lkp_present_watermark').output.firstRow.newval}'",
+						"sqlReaderQuery": "select * from prd_src where\nlastmodifytime >'@{activity('Lkp_Old_waterMarkDate').output.firstRow.oldval}'\n\nand \nlastmodifytime <='@{activity('Lkp_present_watermark').output.firstRow.newval}'",
 						"queryTimeout": "02:00:00",
 						"partitionOption": "None"
 					},

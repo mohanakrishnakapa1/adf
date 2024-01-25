@@ -1,0 +1,124 @@
+{
+	"name": "pip_passquery_through_setvariable",
+	"properties": {
+		"activities": [
+			{
+				"name": "ForEach1",
+				"type": "ForEach",
+				"dependsOn": [
+					{
+						"activity": "Set variable1",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"items": {
+						"value": "@variables('var_Contry')",
+						"type": "Expression"
+					},
+					"activities": [
+						{
+							"name": "Copy data1",
+							"type": "Copy",
+							"dependsOn": [],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"source": {
+									"type": "AzureSqlSource",
+									"sqlReaderQuery": {
+										"value": "@variables('var_Contry')",
+										"type": "Expression"
+									},
+									"queryTimeout": "02:00:00",
+									"partitionOption": "None"
+								},
+								"sink": {
+									"type": "DelimitedTextSink",
+									"storeSettings": {
+										"type": "AzureBlobStorageWriteSettings"
+									},
+									"formatSettings": {
+										"type": "DelimitedTextWriteSettings",
+										"quoteAllText": true,
+										"fileExtension": ".txt"
+									}
+								},
+								"enableStaging": false,
+								"translator": {
+									"type": "TabularTranslator",
+									"typeConversion": true,
+									"typeConversionSettings": {
+										"allowDataTruncation": true,
+										"treatBooleanAsNumber": false
+									}
+								}
+							},
+							"inputs": [
+								{
+									"referenceName": "Param_Table",
+									"type": "DatasetReference",
+									"parameters": {
+										"Tab_Name": "sales_tbl"
+									}
+								}
+							],
+							"outputs": [
+								{
+									"referenceName": "Param_Delimited_Output",
+									"type": "DatasetReference",
+									"parameters": {
+										"File_Output": {
+											"value": "@concat(item(),'.csv')",
+											"type": "Expression"
+										}
+									}
+								}
+							]
+						}
+					]
+				}
+			},
+			{
+				"name": "Set variable1",
+				"type": "SetVariable",
+				"dependsOn": [],
+				"policy": {
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "var_Contry",
+					"value": {
+						"value": "select saleid,saledate,country,item,value from sales_tbl where country = '@{pipeline().parameters.Country}'",
+						"type": "Expression"
+					}
+				}
+			}
+		],
+		"parameters": {
+			"Country": {
+				"type": "string"
+			}
+		},
+		"variables": {
+			"var_Contry": {
+				"type": "String"
+			}
+		},
+		"folder": {
+			"name": "Pass_SqlQuery_To_Variable"
+		},
+		"annotations": []
+	}
+}

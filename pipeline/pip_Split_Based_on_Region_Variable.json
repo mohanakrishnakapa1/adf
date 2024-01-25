@@ -29,19 +29,32 @@
 								"source": {
 									"type": "AzureSqlSource",
 									"sqlReaderQuery": {
-										"value": "@concat('select * from sales_tbl where region=''',item(),'''')",
+										"value": "@concat('select * from sales_tbl where country=''',item(),'''')",
 										"type": "Expression"
 									},
 									"queryTimeout": "02:00:00",
 									"partitionOption": "None"
 								},
 								"sink": {
-									"type": "BinarySink",
+									"type": "DelimitedTextSink",
 									"storeSettings": {
 										"type": "AzureBlobStorageWriteSettings"
+									},
+									"formatSettings": {
+										"type": "DelimitedTextWriteSettings",
+										"quoteAllText": true,
+										"fileExtension": ".txt"
 									}
 								},
-								"enableStaging": false
+								"enableStaging": false,
+								"translator": {
+									"type": "TabularTranslator",
+									"typeConversion": true,
+									"typeConversionSettings": {
+										"allowDataTruncation": true,
+										"treatBooleanAsNumber": false
+									}
+								}
 							},
 							"inputs": [
 								{
@@ -54,11 +67,11 @@
 							],
 							"outputs": [
 								{
-									"referenceName": "Param_Output_Pass_FileName",
+									"referenceName": "Param_Delimited_Output",
 									"type": "DatasetReference",
 									"parameters": {
 										"File_Output": {
-											"value": "@item()",
+											"value": "@concat(item(),'.csv')",
 											"type": "Expression"
 										}
 									}
@@ -71,8 +84,11 @@
 		],
 		"variables": {
 			"Region": {
-				"type": "String",
-				"defaultValue": "[\"India\",\"USA\"]"
+				"type": "Array",
+				"defaultValue": [
+					"India",
+					"USA"
+				]
 			}
 		},
 		"folder": {

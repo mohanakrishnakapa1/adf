@@ -9,7 +9,7 @@
 			"sources": [
 				{
 					"dataset": {
-						"referenceName": "Param_Table",
+						"referenceName": "Param_Src",
 						"type": "DatasetReference"
 					},
 					"name": "EmpSource"
@@ -30,15 +30,7 @@
 				}
 			],
 			"scriptLines": [
-				"source(output(",
-				"          empno as integer,",
-				"          ename as string,",
-				"          firstname as string,",
-				"          lastname as string,",
-				"          sal as double,",
-				"          department as integer",
-				"     ),",
-				"     allowSchemaDrift: true,",
+				"source(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     isolationLevel: 'READ_UNCOMMITTED',",
 				"     format: 'table') ~> EmpSource",

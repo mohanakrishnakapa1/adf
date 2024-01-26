@@ -27,12 +27,6 @@
 				}
 			}
 		],
-		"parameters": {
-			"Tbl_Name": {
-				"type": "string",
-				"defaultValue": "employee_final_scd1"
-			}
-		},
 		"folder": {
 			"name": "SCD"
 		},

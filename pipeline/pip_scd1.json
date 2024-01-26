@@ -17,7 +17,15 @@
 				"typeProperties": {
 					"dataflow": {
 						"referenceName": "scdtype1_usingalterrow",
-						"type": "DataFlowReference"
+						"type": "DataFlowReference",
+						"datasetParameters": {
+							"EmpSource": {
+								"Tal_Source": "employee"
+							},
+							"sinkEmployee": {
+								"Tab_Name_Tgt": "employee_final_scd1"
+							}
+						}
 					},
 					"compute": {
 						"coreCount": 8,

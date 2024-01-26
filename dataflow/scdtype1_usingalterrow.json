@@ -30,7 +30,15 @@
 				}
 			],
 			"scriptLines": [
-				"source(allowSchemaDrift: true,",
+				"source(output(",
+				"          empno as integer,",
+				"          ename as string,",
+				"          firstname as string,",
+				"          lastname as string,",
+				"          sal as double,",
+				"          department as integer",
+				"     ),",
+				"     allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     isolationLevel: 'READ_UNCOMMITTED',",
 				"     format: 'table') ~> EmpSource",

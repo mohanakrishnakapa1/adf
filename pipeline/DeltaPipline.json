@@ -28,7 +28,7 @@
 						"referenceName": "Param_Table",
 						"type": "DatasetReference",
 						"parameters": {
-							"Tab_Name": {
+							"Tab_Name_Tgt": {
 								"value": "@pipeline().parameters.ControlTabName",
 								"type": "Expression"
 							}
@@ -62,7 +62,7 @@
 						"referenceName": "Param_Table",
 						"type": "DatasetReference",
 						"parameters": {
-							"Tab_Name": {
+							"Tab_Name_Tgt": {
 								"value": "@pipeline().parameters.TabName",
 								"type": "Expression"
 							}
@@ -131,7 +131,7 @@
 						"referenceName": "Param_Table",
 						"type": "DatasetReference",
 						"parameters": {
-							"Tab_Name": {
+							"Tab_Name_Tgt": {
 								"value": "@pipeline().parameters.TabName",
 								"type": "Expression"
 							}

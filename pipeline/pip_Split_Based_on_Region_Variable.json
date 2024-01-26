@@ -61,7 +61,7 @@
 									"referenceName": "Param_Table",
 									"type": "DatasetReference",
 									"parameters": {
-										"Tab_Name": "sales_tbl"
+										"Tab_Name_Tgt": "sales_tbl"
 									}
 								}
 							],

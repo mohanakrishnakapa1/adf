@@ -26,13 +26,13 @@
 								}
 							},
 							"sink1": {
-								"Tab_Name": {
+								"Tab_Name_Tgt": {
 									"value": "@pipeline().parameters.tbl",
 									"type": "Expression"
 								}
 							},
 							"sink2": {
-								"Tab_Name": {
+								"Tab_Name_Tgt": {
 									"value": "@pipeline().parameters.tbl",
 									"type": "Expression"
 								}

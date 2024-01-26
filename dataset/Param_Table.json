@@ -49,7 +49,7 @@
 		"typeProperties": {
 			"schema": "dbo",
 			"table": {
-				"value": "@dataset().Tab_Name",
+				"value": "@dataset().Tab_Name_Tgt",
 				"type": "Expression"
 			}
 		}

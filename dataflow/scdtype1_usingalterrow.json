@@ -1,0 +1,68 @@
+{
+	"name": "scdtype1_usingalterrow",
+	"properties": {
+		"folder": {
+			"name": "SCD1"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "Param_Table",
+						"type": "DatasetReference"
+					},
+					"name": "EmpSource"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "Param_Table",
+						"type": "DatasetReference"
+					},
+					"name": "sinkEmployee"
+				}
+			],
+			"transformations": [
+				{
+					"name": "alterRow1"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          empno as integer,",
+				"          ename as string,",
+				"          firstname as string,",
+				"          lastname as string,",
+				"          sal as double,",
+				"          department as integer",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     format: 'table') ~> EmpSource",
+				"EmpSource alterRow(upsertIf(1 == 1)) ~> alterRow1",
+				"alterRow1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          empno as integer,",
+				"          ename as string,",
+				"          firstname as string,",
+				"          lastname as string,",
+				"          sal as double,",
+				"          department as integer",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:false,",
+				"     updateable:false,",
+				"     upsertable:true,",
+				"     keys:['empno'],",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError') ~> sinkEmployee"
+			]
+		}
+	}
+}

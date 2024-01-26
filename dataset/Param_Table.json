@@ -19,24 +19,29 @@
 		"type": "AzureSqlTable",
 		"schema": [
 			{
-				"name": "empid",
+				"name": "empno",
 				"type": "int",
 				"precision": 10
 			},
 			{
-				"name": "name",
+				"name": "ename",
 				"type": "varchar"
 			},
 			{
-				"name": "state",
+				"name": "firstname",
 				"type": "varchar"
 			},
 			{
-				"name": "phoeno",
+				"name": "lastname",
 				"type": "varchar"
 			},
 			{
-				"name": "value",
+				"name": "sal",
+				"type": "float",
+				"precision": 15
+			},
+			{
+				"name": "department",
 				"type": "int",
 				"precision": 10
 			}

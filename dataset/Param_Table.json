@@ -11,7 +11,7 @@
 			}
 		},
 		"parameters": {
-			"Tab_Name": {
+			"Tab_Name_Tgt": {
 				"type": "string"
 			}
 		},

@@ -18,7 +18,7 @@
 			"sinks": [
 				{
 					"dataset": {
-						"referenceName": "Param_Table",
+						"referenceName": "Param_Src",
 						"type": "DatasetReference"
 					},
 					"name": "sinkEmployee"
@@ -45,14 +45,6 @@
 				"EmpSource alterRow(upsertIf(1 == 1)) ~> alterRow1",
 				"alterRow1 sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
-				"     input(",
-				"          empno as integer,",
-				"          ename as string,",
-				"          firstname as string,",
-				"          lastname as string,",
-				"          sal as double,",
-				"          department as integer",
-				"     ),",
 				"     deletable:false,",
 				"     insertable:false,",
 				"     updateable:false,",

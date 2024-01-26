@@ -81,6 +81,227 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/DeltaPipline')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Lkp_Old_waterMarkDate",
+						"type": "Lookup",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "AzureSqlSource",
+								"sqlReaderQuery": {
+									"value": "select max(lastupdatetimestamp) as oldval from @{pipeline().parameters.ControlTabName} where tablename = '@{pipeline().parameters.TabName}'",
+									"type": "Expression"
+								},
+								"queryTimeout": "02:00:00",
+								"partitionOption": "None"
+							},
+							"dataset": {
+								"referenceName": "Param_Table",
+								"type": "DatasetReference",
+								"parameters": {
+									"Tab_Name_Tgt": {
+										"value": "@pipeline().parameters.ControlTabName",
+										"type": "Expression"
+									}
+								}
+							}
+						}
+					},
+					{
+						"name": "Lkp_present_watermark",
+						"type": "Lookup",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "AzureSqlSource",
+								"sqlReaderQuery": {
+									"value": "select max(lastmodifytime) as newval from @{pipeline().parameters.TabName}",
+									"type": "Expression"
+								},
+								"queryTimeout": "02:00:00",
+								"partitionOption": "None"
+							},
+							"dataset": {
+								"referenceName": "Param_Table",
+								"type": "DatasetReference",
+								"parameters": {
+									"Tab_Name_Tgt": {
+										"value": "@pipeline().parameters.TabName",
+										"type": "Expression"
+									}
+								}
+							}
+						}
+					},
+					{
+						"name": "Copy data1",
+						"type": "Copy",
+						"dependsOn": [
+							{
+								"activity": "Lkp_Old_waterMarkDate",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							},
+							{
+								"activity": "Lkp_present_watermark",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "AzureSqlSource",
+								"sqlReaderQuery": {
+									"value": "select * from @{pipeline().parameters.TabName} where\nlastmodifytime >'@{activity('Lkp_Old_waterMarkDate').output.firstRow.oldval}'\nand \nlastmodifytime <='@{activity('Lkp_present_watermark').output.firstRow.newval}'",
+									"type": "Expression"
+								},
+								"queryTimeout": "02:00:00",
+								"partitionOption": "None"
+							},
+							"sink": {
+								"type": "DelimitedTextSink",
+								"storeSettings": {
+									"type": "AzureBlobStorageWriteSettings"
+								},
+								"formatSettings": {
+									"type": "DelimitedTextWriteSettings",
+									"quoteAllText": true,
+									"fileExtension": ".txt"
+								}
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"typeConversion": true,
+								"typeConversionSettings": {
+									"allowDataTruncation": true,
+									"treatBooleanAsNumber": false
+								}
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "Param_Table",
+								"type": "DatasetReference",
+								"parameters": {
+									"Tab_Name_Tgt": {
+										"value": "@pipeline().parameters.TabName",
+										"type": "Expression"
+									}
+								}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "DelimitedDataset_Param",
+								"type": "DatasetReference",
+								"parameters": {
+									"Filename": {
+										"value": "@concat('Incremental','-',pipeline().RunId,'.csv')",
+										"type": "Expression"
+									}
+								}
+							}
+						]
+					},
+					{
+						"name": "Stored procedure1",
+						"type": "SqlServerStoredProcedure",
+						"dependsOn": [
+							{
+								"activity": "Copy data1",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"storedProcedureName": "[[dbo].[updatecontroltbltmstp]",
+							"storedProcedureParameters": {
+								"vdatetime": {
+									"value": {
+										"value": "@{activity('Lkp_present_watermark').output.firstRow.newval}",
+										"type": "Expression"
+									},
+									"type": "DateTime"
+								},
+								"vtblname": {
+									"value": {
+										"value": "@pipeline().parameters.TabName",
+										"type": "Expression"
+									},
+									"type": "String"
+								}
+							}
+						},
+						"linkedServiceName": {
+							"referenceName": "AzureSqlDatabase1",
+							"type": "LinkedServiceReference"
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"parameters": {
+					"TabName": {
+						"type": "string"
+					},
+					"ControlTabName": {
+						"type": "string"
+					}
+				},
+				"folder": {
+					"name": "Delta_UsingControlTable"
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/Param_Table')]",
+				"[concat(variables('factoryId'), '/datasets/DelimitedDataset_Param')]",
+				"[concat(variables('factoryId'), '/linkedServices/AzureSqlDatabase1')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/Query_In_CopyActivity_Pass_ParameterVal')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
@@ -195,13 +416,13 @@
 										}
 									},
 									"sink1": {
-										"Tab_Name": {
+										"Tab_Name_Tgt": {
 											"value": "@pipeline().parameters.tbl",
 											"type": "Expression"
 										}
 									},
 									"sink2": {
-										"Tab_Name": {
+										"Tab_Name_Tgt": {
 											"value": "@pipeline().parameters.tbl",
 											"type": "Expression"
 										}
@@ -356,7 +577,7 @@
 										}
 									},
 									"sinkemp": {
-										"Tab_Name": {
+										"Tab_Name_Tgt": {
 											"value": "@pipeline().parameters.tal",
 											"type": "Expression"
 										}
@@ -459,7 +680,7 @@
 											"referenceName": "Param_Table",
 											"type": "DatasetReference",
 											"parameters": {
-												"Tab_Name": "sales_tbl"
+												"Tab_Name_Tgt": "sales_tbl"
 											}
 										}
 									],
@@ -574,7 +795,7 @@
 											"referenceName": "Param_Table",
 											"type": "DatasetReference",
 											"parameters": {
-												"Tab_Name": "sales_tbl"
+												"Tab_Name_Tgt": "sales_tbl"
 											}
 										}
 									],
@@ -633,6 +854,59 @@
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/datasets/Param_Table')]",
 				"[concat(variables('factoryId'), '/datasets/Param_Delimited_Output')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/pip_scd1')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "scdtype1_usingalterrow",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "scdtype1_usingalterrow",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"EmpSource": {
+										"Tal_Source": "employee"
+									},
+									"sinkEmployee": {
+										"Tab_Name_Tgt": "employee_final_scd1"
+									}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"folder": {
+					"name": "SCD"
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/dataflows/scdtype1_usingalterrow')]"
 			]
 		},
 		{
@@ -1328,6 +1602,32 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/Param_Src')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzureSqlDatabase1",
+					"type": "LinkedServiceReference"
+				},
+				"parameters": {
+					"Tal_Source": {
+						"type": "string"
+					}
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [],
+				"typeProperties": {
+					"schema": "dbo",
+					"table": "employee"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/AzureSqlDatabase1')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/Param_Table')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
@@ -1342,7 +1642,7 @@
 					}
 				},
 				"parameters": {
-					"Tab_Name": {
+					"Tab_Name_Tgt": {
 						"type": "string"
 					}
 				},
@@ -1350,24 +1650,29 @@
 				"type": "AzureSqlTable",
 				"schema": [
 					{
-						"name": "empid",
+						"name": "empno",
 						"type": "int",
 						"precision": 10
 					},
 					{
-						"name": "name",
+						"name": "ename",
 						"type": "varchar"
 					},
 					{
-						"name": "state",
+						"name": "firstname",
 						"type": "varchar"
 					},
 					{
-						"name": "phoeno",
+						"name": "lastname",
 						"type": "varchar"
 					},
 					{
-						"name": "value",
+						"name": "sal",
+						"type": "float",
+						"precision": 15
+					},
+					{
+						"name": "department",
 						"type": "int",
 						"precision": 10
 					}
@@ -1375,7 +1680,7 @@
 				"typeProperties": {
 					"schema": "dbo",
 					"table": {
-						"value": "@dataset().Tab_Name",
+						"value": "@dataset().Tab_Name_Tgt",
 						"type": "Expression"
 					}
 				}
@@ -1650,11 +1955,12 @@
 						"split1@ErrorRows sink(allowSchemaDrift: true,",
 						"     validateSchema: false,",
 						"     input(",
-						"          empid as integer,",
-						"          name as string,",
-						"          state as string,",
-						"          phoeno as string,",
-						"          value as integer",
+						"          empno as integer,",
+						"          ename as string,",
+						"          firstname as string,",
+						"          lastname as string,",
+						"          sal as double,",
+						"          department as integer",
 						"     ),",
 						"     deletable:false,",
 						"     insertable:true,",
@@ -1674,11 +1980,12 @@
 						"split1@GoodRows sink(allowSchemaDrift: true,",
 						"     validateSchema: false,",
 						"     input(",
-						"          empid as integer,",
-						"          name as string,",
-						"          state as string,",
-						"          phoeno as string,",
-						"          value as integer",
+						"          empno as integer,",
+						"          ename as string,",
+						"          firstname as string,",
+						"          lastname as string,",
+						"          sal as double,",
+						"          department as integer",
 						"     ),",
 						"     deletable:false,",
 						"     insertable:true,",
@@ -1747,11 +2054,12 @@
 						"derivedColumn1 sink(allowSchemaDrift: true,",
 						"     validateSchema: false,",
 						"     input(",
-						"          empid as integer,",
-						"          name as string,",
-						"          state as string,",
-						"          phoeno as string,",
-						"          value as integer",
+						"          empno as integer,",
+						"          ename as string,",
+						"          firstname as string,",
+						"          lastname as string,",
+						"          sal as double,",
+						"          department as integer",
 						"     ),",
 						"     deletable:false,",
 						"     insertable:true,",
@@ -1776,221 +2084,77 @@
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/DeltaPipline')]",
-			"type": "Microsoft.DataFactory/factories/pipelines",
+			"name": "[concat(parameters('factoryName'), '/scdtype1_usingalterrow')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
 			"apiVersion": "2018-06-01",
 			"properties": {
-				"activities": [
-					{
-						"name": "Lkp_Old_waterMarkDate",
-						"type": "Lookup",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "0.12:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"source": {
-								"type": "AzureSqlSource",
-								"sqlReaderQuery": {
-									"value": "select max(lastupdatetimestamp) as oldval from @{pipeline().parameters.ControlTabName} where tablename = '@{pipeline().parameters.TabName}'",
-									"type": "Expression"
-								},
-								"queryTimeout": "02:00:00",
-								"partitionOption": "None"
-							},
-							"dataset": {
-								"referenceName": "Param_Table",
-								"type": "DatasetReference",
-								"parameters": {
-									"Tab_Name": {
-										"value": "@pipeline().parameters.ControlTabName",
-										"type": "Expression"
-									}
-								}
-							}
-						}
-					},
-					{
-						"name": "Lkp_present_watermark",
-						"type": "Lookup",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "0.12:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"source": {
-								"type": "AzureSqlSource",
-								"sqlReaderQuery": {
-									"value": "select max(lastmodifytime) as newval from @{pipeline().parameters.TabName}",
-									"type": "Expression"
-								},
-								"queryTimeout": "02:00:00",
-								"partitionOption": "None"
-							},
-							"dataset": {
-								"referenceName": "Param_Table",
-								"type": "DatasetReference",
-								"parameters": {
-									"Tab_Name": {
-										"value": "@pipeline().parameters.TabName",
-										"type": "Expression"
-									}
-								}
-							}
-						}
-					},
-					{
-						"name": "Copy data1",
-						"type": "Copy",
-						"dependsOn": [
-							{
-								"activity": "Lkp_Old_waterMarkDate",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							},
-							{
-								"activity": "Lkp_present_watermark",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"policy": {
-							"timeout": "0.12:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"source": {
-								"type": "AzureSqlSource",
-								"sqlReaderQuery": {
-									"value": "select * from @{pipeline().parameters.TabName} where\nlastmodifytime >'@{activity('Lkp_Old_waterMarkDate').output.firstRow.oldval}'\nand \nlastmodifytime <='@{activity('Lkp_present_watermark').output.firstRow.newval}'",
-									"type": "Expression"
-								},
-								"queryTimeout": "02:00:00",
-								"partitionOption": "None"
-							},
-							"sink": {
-								"type": "DelimitedTextSink",
-								"storeSettings": {
-									"type": "AzureBlobStorageWriteSettings"
-								},
-								"formatSettings": {
-									"type": "DelimitedTextWriteSettings",
-									"quoteAllText": true,
-									"fileExtension": ".txt"
-								}
-							},
-							"enableStaging": false,
-							"translator": {
-								"type": "TabularTranslator",
-								"typeConversion": true,
-								"typeConversionSettings": {
-									"allowDataTruncation": true,
-									"treatBooleanAsNumber": false
-								}
-							}
-						},
-						"inputs": [
-							{
-								"referenceName": "Param_Table",
-								"type": "DatasetReference",
-								"parameters": {
-									"Tab_Name": {
-										"value": "@pipeline().parameters.TabName",
-										"type": "Expression"
-									}
-								}
-							}
-						],
-						"outputs": [
-							{
-								"referenceName": "DelimitedDataset_Param",
-								"type": "DatasetReference",
-								"parameters": {
-									"Filename": {
-										"value": "@concat('Incremental','-',pipeline().RunId,'.csv')",
-										"type": "Expression"
-									}
-								}
-							}
-						]
-					},
-					{
-						"name": "Stored procedure1",
-						"type": "SqlServerStoredProcedure",
-						"dependsOn": [
-							{
-								"activity": "Copy data1",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"policy": {
-							"timeout": "0.12:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"storedProcedureName": "[[dbo].[updatecontroltbltmstp]",
-							"storedProcedureParameters": {
-								"vdatetime": {
-									"value": "@{activity('Lkp_present_watermark').output.firstRow.newval}",
-									"type": "DateTime"
-								},
-								"vtblname": {
-									"value": {
-										"value": "@pipeline().parameters.TabName",
-										"type": "Expression"
-									},
-									"type": "String"
-								}
-							}
-						},
-						"linkedServiceName": {
-							"referenceName": "AzureSqlDatabase1",
-							"type": "LinkedServiceReference"
-						}
-					}
-				],
-				"policy": {
-					"elapsedTimeMetric": {}
-				},
-				"parameters": {
-					"TabName": {
-						"type": "string"
-					},
-					"ControlTabName": {
-						"type": "string"
-					}
-				},
 				"folder": {
-					"name": "Delta_UsingControlTable"
+					"name": "SCD1"
 				},
-				"annotations": []
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "Param_Src",
+								"type": "DatasetReference"
+							},
+							"name": "EmpSource"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "Param_Table",
+								"type": "DatasetReference"
+							},
+							"name": "sinkEmployee"
+						}
+					],
+					"transformations": [
+						{
+							"name": "alterRow1"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          empno as integer,",
+						"          ename as string,",
+						"          firstname as string,",
+						"          lastname as string,",
+						"          sal as double,",
+						"          department as integer",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     isolationLevel: 'READ_UNCOMMITTED',",
+						"     format: 'table') ~> EmpSource",
+						"EmpSource alterRow(upsertIf(1==1)) ~> alterRow1",
+						"alterRow1 sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     input(",
+						"          empno as integer,",
+						"          ename as string,",
+						"          firstname as string,",
+						"          lastname as string,",
+						"          sal as double,",
+						"          department as integer",
+						"     ),",
+						"     deletable:false,",
+						"     insertable:false,",
+						"     updateable:false,",
+						"     upsertable:true,",
+						"     keys:['empno'],",
+						"     format: 'table',",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     errorHandlingOption: 'stopOnFirstError') ~> sinkEmployee"
+					]
+				}
 			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/datasets/Param_Table')]",
-				"[concat(variables('factoryId'), '/datasets/DelimitedDataset_Param')]",
-				"[concat(variables('factoryId'), '/linkedServices/AzureSqlDatabase1')]"
+				"[concat(variables('factoryId'), '/datasets/Param_Src')]",
+				"[concat(variables('factoryId'), '/datasets/Param_Table')]"
 			]
 		}
 	]

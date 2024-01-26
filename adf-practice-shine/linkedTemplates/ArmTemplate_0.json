@@ -477,6 +477,32 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/Param_Src')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzureSqlDatabase1",
+					"type": "LinkedServiceReference"
+				},
+				"parameters": {
+					"Tal_Source": {
+						"type": "string"
+					}
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [],
+				"typeProperties": {
+					"schema": "dbo",
+					"table": "employee"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/AzureSqlDatabase1')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/Param_Table')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
@@ -491,7 +517,7 @@
 					}
 				},
 				"parameters": {
-					"Tab_Name": {
+					"Tab_Name_Tgt": {
 						"type": "string"
 					}
 				},
@@ -499,24 +525,29 @@
 				"type": "AzureSqlTable",
 				"schema": [
 					{
-						"name": "empid",
+						"name": "empno",
 						"type": "int",
 						"precision": 10
 					},
 					{
-						"name": "name",
+						"name": "ename",
 						"type": "varchar"
 					},
 					{
-						"name": "state",
+						"name": "firstname",
 						"type": "varchar"
 					},
 					{
-						"name": "phoeno",
+						"name": "lastname",
 						"type": "varchar"
 					},
 					{
-						"name": "value",
+						"name": "sal",
+						"type": "float",
+						"precision": 15
+					},
+					{
+						"name": "department",
 						"type": "int",
 						"precision": 10
 					}
@@ -524,7 +555,7 @@
 				"typeProperties": {
 					"schema": "dbo",
 					"table": {
-						"value": "@dataset().Tab_Name",
+						"value": "@dataset().Tab_Name_Tgt",
 						"type": "Expression"
 					}
 				}
@@ -713,90 +744,6 @@
 				"annotations": []
 			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/datasets/ToSalesData')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/Query_In_CopyActivity_Pass_ParameterVal')]",
-			"type": "Microsoft.DataFactory/factories/pipelines",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"activities": [
-					{
-						"name": "Copy data1",
-						"type": "Copy",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "0.12:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"source": {
-								"type": "AzureSqlSource",
-								"sqlReaderQuery": {
-									"value": "@concat('select * from sales where country =''',pipeline().parameters.country,'''')",
-									"type": "Expression"
-								},
-								"queryTimeout": "02:00:00",
-								"partitionOption": "None"
-							},
-							"sink": {
-								"type": "DelimitedTextSink",
-								"storeSettings": {
-									"type": "AzureBlobStorageWriteSettings"
-								},
-								"formatSettings": {
-									"type": "DelimitedTextWriteSettings",
-									"quoteAllText": true,
-									"fileExtension": ".txt"
-								}
-							},
-							"enableStaging": false,
-							"translator": {
-								"type": "TabularTranslator",
-								"typeConversion": true,
-								"typeConversionSettings": {
-									"allowDataTruncation": true,
-									"treatBooleanAsNumber": false
-								}
-							}
-						},
-						"inputs": [
-							{
-								"referenceName": "SalesTable",
-								"type": "DatasetReference",
-								"parameters": {}
-							}
-						],
-						"outputs": [
-							{
-								"referenceName": "ToSalesData",
-								"type": "DatasetReference",
-								"parameters": {}
-							}
-						]
-					}
-				],
-				"policy": {
-					"elapsedTimeMetric": {}
-				},
-				"parameters": {
-					"country": {
-						"type": "string",
-						"defaultValue": "India"
-					}
-				},
-				"folder": {
-					"name": "Parametertized"
-				},
-				"annotations": []
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/datasets/SalesTable')]",
 				"[concat(variables('factoryId'), '/datasets/ToSalesData')]"
 			]
 		}

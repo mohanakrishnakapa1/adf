@@ -187,7 +187,6 @@
 				"     saveOrder: 2,",
 				"     errorHandlingOption: 'stopOnFirstError',",
 				"     mapColumn(",
-				"          emp_key,",
 				"          emp_id,",
 				"          fname,",
 				"          lname,",

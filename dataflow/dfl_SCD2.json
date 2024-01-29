@@ -198,7 +198,8 @@
 				"          Is_active = is_active_update,",
 				"          create_dt,",
 				"          ef_start_dt,",
-				"          ef_end_dt = curren_endDate",
+				"          ef_end_dt = curren_endDate,",
+				"          emp_key",
 				"     )) ~> sinkU"
 			]
 		}

@@ -12,38 +12,72 @@
 		},
 		"parameters": {
 			"Tab_Name_Tgt": {
-				"type": "string"
+				"type": "string",
+				"defaultValue": "employee_dim"
 			}
 		},
 		"annotations": [],
 		"type": "AzureSqlTable",
 		"schema": [
 			{
-				"name": "empno",
+				"name": "emp_key",
 				"type": "int",
 				"precision": 10
 			},
 			{
-				"name": "ename",
-				"type": "varchar"
-			},
-			{
-				"name": "firstname",
-				"type": "varchar"
-			},
-			{
-				"name": "lastname",
-				"type": "varchar"
-			},
-			{
-				"name": "sal",
-				"type": "float",
-				"precision": 15
-			},
-			{
-				"name": "department",
+				"name": "emp_id",
 				"type": "int",
 				"precision": 10
+			},
+			{
+				"name": "fname",
+				"type": "varchar"
+			},
+			{
+				"name": "lname",
+				"type": "varchar"
+			},
+			{
+				"name": "DOB",
+				"type": "date"
+			},
+			{
+				"name": "mobile",
+				"type": "varchar"
+			},
+			{
+				"name": "gender",
+				"type": "varchar"
+			},
+			{
+				"name": "address",
+				"type": "varchar"
+			},
+			{
+				"name": "city",
+				"type": "varchar"
+			},
+			{
+				"name": "Is_active",
+				"type": "varchar"
+			},
+			{
+				"name": "create_dt",
+				"type": "datetime",
+				"precision": 23,
+				"scale": 3
+			},
+			{
+				"name": "ef_start_dt",
+				"type": "datetime",
+				"precision": 23,
+				"scale": 3
+			},
+			{
+				"name": "ef_end_dt",
+				"type": "datetime",
+				"precision": 23,
+				"scale": 3
 			}
 		],
 		"typeProperties": {

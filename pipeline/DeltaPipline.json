@@ -174,7 +174,10 @@
 					"storedProcedureName": "[dbo].[updatecontroltbltmstp]",
 					"storedProcedureParameters": {
 						"vdatetime": {
-							"value": "@{activity('Lkp_present_watermark').output.firstRow.newval}",
+							"value": {
+								"value": "@{activity('Lkp_present_watermark').output.firstRow.newval}",
+								"type": "Expression"
+							},
 							"type": "DateTime"
 						},
 						"vtblname": {

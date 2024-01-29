@@ -54,6 +54,9 @@
 				},
 				{
 					"name": "alterRow1"
+				},
+				{
+					"name": "alterRow2"
 				}
 			],
 			"scriptLines": [
@@ -119,7 +122,8 @@
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true) ~> select1",
 				"splitCheck@U alterRow(updateIf(1==1)) ~> alterRow1",
-				"splitCheck@I sink(allowSchemaDrift: true,",
+				"splitCheck@I alterRow(insertIf(1 == 1)) ~> alterRow2",
+				"alterRow2 sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     input(",
 				"          emp_key as integer,",
@@ -178,8 +182,8 @@
 				"     ),",
 				"     deletable:false,",
 				"     insertable:false,",
-				"     updateable:false,",
-				"     upsertable:true,",
+				"     updateable:true,",
+				"     upsertable:false,",
 				"     keys:['emp_key'],",
 				"     format: 'table',",
 				"     skipDuplicateMapInputs: true,",

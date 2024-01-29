@@ -99,7 +99,8 @@
 				"     broadcast: 'auto')~> lookup1",
 				"lookup1 derive(is_active_Insert = 1,",
 				"          end_date = addDays(currentTimestamp(),9999),",
-				"          is_active_update = 0) ~> derivedColumn1",
+				"          is_active_update = 0,",
+				"          curren_endDate = currentTimestamp()) ~> derivedColumn1",
 				"derivedColumn1 split(isNull(emp_key),",
 				"     disjoint: true) ~> splitCheck@(I, U)",
 				"srcemployeesrc select(mapColumn(",
@@ -196,7 +197,7 @@
 				"          Is_active = is_active_update,",
 				"          create_dt,",
 				"          ef_start_dt,",
-				"          ef_end_dt",
+				"          ef_end_dt = curren_endDate",
 				"     )) ~> sinkU"
 			]
 		}

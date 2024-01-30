@@ -2331,6 +2331,9 @@
 						},
 						{
 							"name": "alterRow1"
+						},
+						{
+							"name": "alterRow2"
 						}
 					],
 					"scriptLines": [
@@ -2396,7 +2399,8 @@
 						"     skipDuplicateMapInputs: true,",
 						"     skipDuplicateMapOutputs: true) ~> select1",
 						"splitCheck@U alterRow(updateIf(1==1)) ~> alterRow1",
-						"splitCheck@I sink(allowSchemaDrift: true,",
+						"splitCheck@I alterRow(insertIf(1 == 1)) ~> alterRow2",
+						"alterRow2 sink(allowSchemaDrift: true,",
 						"     validateSchema: false,",
 						"     input(",
 						"          emp_key as integer,",
@@ -2420,7 +2424,7 @@
 						"     format: 'table',",
 						"     skipDuplicateMapInputs: true,",
 						"     skipDuplicateMapOutputs: true,",
-						"     saveOrder: 1,",
+						"     saveOrder: 2,",
 						"     errorHandlingOption: 'stopOnFirstError',",
 						"     mapColumn(",
 						"          emp_id = src_emp_id,",
@@ -2455,16 +2459,15 @@
 						"     ),",
 						"     deletable:false,",
 						"     insertable:false,",
-						"     updateable:false,",
-						"     upsertable:true,",
+						"     updateable:true,",
+						"     upsertable:false,",
 						"     keys:['emp_key'],",
 						"     format: 'table',",
 						"     skipDuplicateMapInputs: true,",
 						"     skipDuplicateMapOutputs: true,",
-						"     saveOrder: 2,",
+						"     saveOrder: 1,",
 						"     errorHandlingOption: 'stopOnFirstError',",
 						"     mapColumn(",
-						"          emp_key,",
 						"          emp_id,",
 						"          fname,",
 						"          lname,",
@@ -2476,7 +2479,8 @@
 						"          Is_active = is_active_update,",
 						"          create_dt,",
 						"          ef_start_dt,",
-						"          ef_end_dt = curren_endDate",
+						"          ef_end_dt = curren_endDate,",
+						"          emp_key",
 						"     )) ~> sinkU"
 					]
 				}

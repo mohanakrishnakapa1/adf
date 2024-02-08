@@ -1,0 +1,211 @@
+{
+	"name": "dfl_SCD2_generic",
+	"properties": {
+		"folder": {
+			"name": "SCD2"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "Param_Src",
+						"type": "DatasetReference"
+					},
+					"name": "srcemployeesrc"
+				},
+				{
+					"dataset": {
+						"referenceName": "Param_Table",
+						"type": "DatasetReference"
+					},
+					"name": "srcTarget"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "Param_Table",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				},
+				{
+					"dataset": {
+						"referenceName": "Param_Table",
+						"type": "DatasetReference"
+					},
+					"name": "sinkU"
+				}
+			],
+			"transformations": [
+				{
+					"name": "lookup1"
+				},
+				{
+					"name": "derivedColumn1"
+				},
+				{
+					"name": "splitCheck"
+				},
+				{
+					"name": "select1",
+					"description": "Renaming srcemployeesrc to select1 with columns 'src_emp_id, src_fname, lname, DOB, salary, mobile, gender, address, city, created_dt, last_update_date'"
+				},
+				{
+					"name": "alterRow1"
+				},
+				{
+					"name": "alterRow2"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          emp_id as integer,",
+				"          fname as string,",
+				"          lname as string,",
+				"          DOB as date,",
+				"          salary as double,",
+				"          mobile as string,",
+				"          gender as string,",
+				"          address as string,",
+				"          city as string,",
+				"          created_dt as timestamp,",
+				"          last_update_date as timestamp",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     format: 'table') ~> srcemployeesrc",
+				"source(output(",
+				"          emp_key as integer,",
+				"          emp_id as integer,",
+				"          fname as string,",
+				"          lname as string,",
+				"          DOB as date,",
+				"          mobile as string,",
+				"          gender as string,",
+				"          address as string,",
+				"          city as string,",
+				"          Is_active as string,",
+				"          create_dt as timestamp,",
+				"          ef_start_dt as timestamp,",
+				"          ef_end_dt as timestamp",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     format: 'table') ~> srcTarget",
+				"select1, srcTarget lookup(src_emp_id == emp_id,",
+				"     multiple: false,",
+				"     pickup: 'any',",
+				"     broadcast: 'auto')~> lookup1",
+				"lookup1 derive(is_active_Insert = 1,",
+				"          end_date = addDays(currentTimestamp(),9999),",
+				"          is_active_update = 0,",
+				"          curren_endDate = currentTimestamp()) ~> derivedColumn1",
+				"derivedColumn1 split(isNull(emp_key),",
+				"     disjoint: true) ~> splitCheck@(I, U)",
+				"srcemployeesrc select(mapColumn(",
+				"          src_emp_id = emp_id,",
+				"          src_fname = fname,",
+				"          src_lname = lname,",
+				"          src_DOB = DOB,",
+				"          src_salary = salary,",
+				"          src_mobile = mobile,",
+				"          src_gender = gender,",
+				"          src_address = address,",
+				"          src_city = city,",
+				"          src_created_dt = created_dt,",
+				"          src_last_update_date = last_update_date",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> select1",
+				"splitCheck@U alterRow(updateIf(1==1)) ~> alterRow1",
+				"splitCheck@I alterRow(insertIf(1==1)) ~> alterRow2",
+				"alterRow2 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          emp_key as integer,",
+				"          emp_id as integer,",
+				"          fname as string,",
+				"          lname as string,",
+				"          DOB as date,",
+				"          mobile as string,",
+				"          gender as string,",
+				"          address as string,",
+				"          city as string,",
+				"          Is_active as string,",
+				"          create_dt as timestamp,",
+				"          ef_start_dt as timestamp,",
+				"          ef_end_dt as timestamp",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     saveOrder: 2,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          emp_id = src_emp_id,",
+				"          fname = src_fname,",
+				"          lname = src_lname,",
+				"          DOB = src_DOB,",
+				"          mobile = src_mobile,",
+				"          gender = src_gender,",
+				"          address = src_address,",
+				"          city = src_city,",
+				"          Is_active = is_active_Insert,",
+				"          ef_start_dt = src_last_update_date,",
+				"          create_dt = src_created_dt,",
+				"          ef_end_dt = end_date",
+				"     )) ~> sink1",
+				"alterRow1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          emp_key as integer,",
+				"          emp_id as integer,",
+				"          fname as string,",
+				"          lname as string,",
+				"          DOB as date,",
+				"          mobile as string,",
+				"          gender as string,",
+				"          address as string,",
+				"          city as string,",
+				"          Is_active as string,",
+				"          create_dt as timestamp,",
+				"          ef_start_dt as timestamp,",
+				"          ef_end_dt as timestamp",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:false,",
+				"     updateable:true,",
+				"     upsertable:false,",
+				"     keys:['emp_key'],",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     saveOrder: 1,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          emp_id,",
+				"          fname,",
+				"          lname,",
+				"          DOB,",
+				"          mobile,",
+				"          gender,",
+				"          address,",
+				"          city,",
+				"          Is_active = is_active_update,",
+				"          create_dt,",
+				"          ef_start_dt,",
+				"          ef_end_dt = curren_endDate,",
+				"          emp_key",
+				"     )) ~> sinkU"
+			]
+		}
+	}
+}

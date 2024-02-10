@@ -62,7 +62,7 @@
 					"name": "MarkAsInsert"
 				},
 				{
-					"name": "exists3"
+					"name": "GetOnlyUpdatedRows"
 				}
 			],
 			"scriptLines": [
@@ -158,9 +158,12 @@
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true) ~> SelectNecessaryCol",
 				"SelectNecessaryCol alterRow(insertIf(true())) ~> MarkAsInsert",
-				"AddTgtMD5Hash, derivedMd5Hash exists(md_tgt_hash == md_hash,",
-				"     negate:false,",
-				"     broadcast: 'auto')~> exists3"
+				"AddTgtMD5Hash, derivedMd5Hash join(emp_id == src_emp_id",
+				"     && md_tgt_hash <=> md_hash,",
+				"     joinType:'inner',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> GetOnlyUpdatedRows"
 			]
 		}
 	}

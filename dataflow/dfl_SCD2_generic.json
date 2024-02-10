@@ -62,7 +62,16 @@
 					"name": "MarkAsInsert"
 				},
 				{
-					"name": "GetOnlyUpdatedRows"
+					"name": "exists3"
+				},
+				{
+					"name": "MakeActiveandEnddt"
+				},
+				{
+					"name": "RequireCols"
+				},
+				{
+					"name": "UpdateRows"
 				}
 			],
 			"scriptLines": [
@@ -137,8 +146,8 @@
 				"     broadcast: 'auto')~> exists2",
 				"AddTgtMD5Hash aggregate(MaxKey = max(emp_key)) ~> GetMaxId",
 				"JoinGetMaxIDFromDim derive(key_tgt = key + MaxKey,",
-				"          is_active = 'Y',",
-				"          eff_end_dt = toTimestamp('9999-12-31 23:59:00')) ~> DeriveKeyActiveEndDT",
+				"          active = 'Y',",
+				"          ef_end_dt = toTimestamp('9999-12-31 23:59:00')) ~> DeriveKeyActiveEndDT",
 				"DeriveKeyActiveEndDT select(mapColumn(",
 				"          src_emp_id,",
 				"          src_fname,",
@@ -152,18 +161,35 @@
 				"          src_created_dt,",
 				"          src_last_update_date,",
 				"          key_tgt,",
-				"          is_active,",
-				"          eff_end_dt",
+				"          is_active = active,",
+				"          eff_end_dt = ef_end_dt",
 				"     ),",
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true) ~> SelectNecessaryCol",
 				"SelectNecessaryCol alterRow(insertIf(true())) ~> MarkAsInsert",
-				"AddTgtMD5Hash, derivedMd5Hash join(emp_id == src_emp_id",
-				"     && md_tgt_hash <=> md_hash,",
-				"     joinType:'inner',",
-				"     matchType:'exact',",
-				"     ignoreSpaces: false,",
-				"     broadcast: 'auto')~> GetOnlyUpdatedRows"
+				"AddTgtMD5Hash, derivedMd5Hash exists(md_tgt_hash == md_hash,",
+				"     negate:false,",
+				"     broadcast: 'auto')~> exists3",
+				"exists3 derive(active = 'N',",
+				"          ef_end_dt = currentTimestamp()) ~> MakeActiveandEnddt",
+				"MakeActiveandEnddt select(mapColumn(",
+				"          emp_key,",
+				"          emp_id,",
+				"          fname,",
+				"          lname,",
+				"          DOB,",
+				"          mobile,",
+				"          gender,",
+				"          address,",
+				"          city,",
+				"          Is_active = active,",
+				"          create_dt,",
+				"          ef_start_dt,",
+				"          eff_end_dt = ef_end_dt",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> RequireCols",
+				"RequireCols alterRow(updateIf(true())) ~> UpdateRows"
 			]
 		}
 	}

@@ -152,7 +152,7 @@
 				"     ignoreSpaces: false,",
 				"     broadcast: 'auto')~> JoinGetMaxIDFromDim",
 				"filter1 derive(md_tgt_hash = md5(mobile,address,city)) ~> AddTgtMD5Hash",
-				"AddTgtMD5Hash, derivedMd5Hash exists(md_tgt_hash == src_emp_id,",
+				"AddTgtMD5Hash, derivedMd5Hash exists(emp_id == src_emp_id,",
 				"     negate:false,",
 				"     broadcast: 'auto')~> exists2",
 				"AddTgtMD5Hash aggregate(MaxKey = max(emp_key)) ~> GetMaxId",

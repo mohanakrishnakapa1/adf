@@ -1,0 +1,243 @@
+{
+	"name": "dfl_SCD2_generic_withLastUpdatedt",
+	"properties": {
+		"folder": {
+			"name": "SCD2"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "Param_Src",
+						"type": "DatasetReference"
+					},
+					"name": "srcemployeesrc"
+				},
+				{
+					"dataset": {
+						"referenceName": "Param_Table",
+						"type": "DatasetReference"
+					},
+					"name": "srcTarget"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "Param_Table",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
+			"transformations": [
+				{
+					"name": "select1",
+					"description": "Renaming srcemployeesrc to select1 with columns 'src_emp_id, src_fname, lname, DOB, salary, mobile, gender, address, city, created_dt, last_update_date'"
+				},
+				{
+					"name": "derivedMd5Hash"
+				},
+				{
+					"name": "filter1"
+				},
+				{
+					"name": "exists1"
+				},
+				{
+					"name": "AddKey"
+				},
+				{
+					"name": "JoinGetMaxIDFromDim"
+				},
+				{
+					"name": "AddTgtMD5Hash"
+				},
+				{
+					"name": "GetMaxId"
+				},
+				{
+					"name": "DeriveKeyActiveEndDT"
+				},
+				{
+					"name": "SelectNecessaryCol"
+				},
+				{
+					"name": "MarkAsInsert"
+				},
+				{
+					"name": "exists3"
+				},
+				{
+					"name": "MakeActiveandEnddt"
+				},
+				{
+					"name": "RequireCols"
+				},
+				{
+					"name": "UpdateRows"
+				},
+				{
+					"name": "unionInsertUpdateRows"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          emp_id as integer,",
+				"          fname as string,",
+				"          lname as string,",
+				"          DOB as date,",
+				"          salary as double,",
+				"          mobile as string,",
+				"          gender as string,",
+				"          address as string,",
+				"          city as string,",
+				"          created_dt as timestamp,",
+				"          last_update_date as timestamp",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     query: 'select * from employee_src\\nwhere last_update_date > DATEADD(day, +1, CURRENT_TIMESTAMP)',",
+				"     format: 'query') ~> srcemployeesrc",
+				"source(output(",
+				"          emp_key as integer,",
+				"          emp_id as integer,",
+				"          fname as string,",
+				"          lname as string,",
+				"          DOB as date,",
+				"          mobile as string,",
+				"          gender as string,",
+				"          address as string,",
+				"          city as string,",
+				"          Is_active as string,",
+				"          create_dt as timestamp,",
+				"          ef_start_dt as timestamp,",
+				"          ef_end_dt as timestamp",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     format: 'table') ~> srcTarget",
+				"srcemployeesrc select(mapColumn(",
+				"          src_emp_id = emp_id,",
+				"          src_fname = fname,",
+				"          src_lname = lname,",
+				"          src_DOB = DOB,",
+				"          src_salary = salary,",
+				"          src_mobile = mobile,",
+				"          src_gender = gender,",
+				"          src_address = address,",
+				"          src_city = city,",
+				"          src_created_dt = created_dt,",
+				"          src_last_update_date = last_update_date",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> select1",
+				"select1 derive(md_hash = md5(src_mobile,src_address,src_city)) ~> derivedMd5Hash",
+				"srcTarget filter(Is_active == 'Y') ~> filter1",
+				"derivedMd5Hash, AddTgtMD5Hash exists(src_emp_id == emp_id",
+				"     && md_hash == md_tgt_hash,",
+				"     negate:true,",
+				"     broadcast: 'auto')~> exists1",
+				"exists1 keyGenerate(output(key as long),",
+				"     startAt: 1L,",
+				"     stepValue: 1L) ~> AddKey",
+				"AddKey, GetMaxId join(true(),",
+				"     joinType:'cross',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> JoinGetMaxIDFromDim",
+				"filter1 derive(md_tgt_hash = md5(mobile,address,city)) ~> AddTgtMD5Hash",
+				"AddTgtMD5Hash aggregate(MaxKey = max(emp_key)) ~> GetMaxId",
+				"JoinGetMaxIDFromDim derive(key_tgt = toInteger(key + MaxKey),",
+				"          active = 'Y',",
+				"          ef_end_dt = toTimestamp('9999-12-31 23:59:00')) ~> DeriveKeyActiveEndDT",
+				"DeriveKeyActiveEndDT select(mapColumn(",
+				"          key = key_tgt,",
+				"          emp_id = src_emp_id,",
+				"          fname = src_fname,",
+				"          lname = src_lname,",
+				"          DOB = src_DOB,",
+				"          mobile = src_mobile,",
+				"          gender = src_gender,",
+				"          address = src_address,",
+				"          city = src_city,",
+				"          Is_active = active,",
+				"          create_dt = src_created_dt,",
+				"          ef_start_dt = src_last_update_date,",
+				"          eff_end_dt = ef_end_dt",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> SelectNecessaryCol",
+				"SelectNecessaryCol alterRow(insertIf(true())) ~> MarkAsInsert",
+				"AddTgtMD5Hash, derivedMd5Hash exists(emp_id == src_emp_id,",
+				"     negate:false,",
+				"     broadcast: 'auto')~> exists3",
+				"exists3 derive(active = 'N',",
+				"          ef_end_dt = currentTimestamp()) ~> MakeActiveandEnddt",
+				"MakeActiveandEnddt select(mapColumn(",
+				"          key = emp_key,",
+				"          emp_id,",
+				"          fname,",
+				"          lname,",
+				"          DOB,",
+				"          mobile,",
+				"          gender,",
+				"          address,",
+				"          city,",
+				"          Is_active = active,",
+				"          create_dt,",
+				"          ef_start_dt,",
+				"          eff_end_dt = ef_end_dt",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> RequireCols",
+				"RequireCols alterRow(updateIf(true())) ~> UpdateRows",
+				"MarkAsInsert, UpdateRows union(byName: true)~> unionInsertUpdateRows",
+				"unionInsertUpdateRows sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          emp_key as integer,",
+				"          emp_id as integer,",
+				"          fname as string,",
+				"          lname as string,",
+				"          DOB as date,",
+				"          mobile as string,",
+				"          gender as string,",
+				"          address as string,",
+				"          city as string,",
+				"          Is_active as string,",
+				"          create_dt as timestamp,",
+				"          ef_start_dt as timestamp,",
+				"          ef_end_dt as timestamp",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:true,",
+				"     upsertable:false,",
+				"     keys:['emp_key'],",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          emp_key = key,",
+				"          emp_id,",
+				"          fname,",
+				"          lname,",
+				"          DOB,",
+				"          mobile,",
+				"          gender,",
+				"          address,",
+				"          city,",
+				"          Is_active,",
+				"          create_dt,",
+				"          ef_start_dt,",
+				"          ef_end_dt = eff_end_dt",
+				"     )) ~> sink1"
+			]
+		}
+	}
+}

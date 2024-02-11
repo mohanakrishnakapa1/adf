@@ -22,7 +22,15 @@
 					"name": "srcTarget"
 				}
 			],
-			"sinks": [],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "Param_Table",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
 			"transformations": [
 				{
 					"name": "select1",
@@ -72,6 +80,9 @@
 				},
 				{
 					"name": "UpdateRows"
+				},
+				{
+					"name": "unionInsertUpdateRows"
 				}
 			],
 			"scriptLines": [
@@ -145,23 +156,22 @@
 				"     negate:false,",
 				"     broadcast: 'auto')~> exists2",
 				"AddTgtMD5Hash aggregate(MaxKey = max(emp_key)) ~> GetMaxId",
-				"JoinGetMaxIDFromDim derive(key_tgt = key + MaxKey,",
+				"JoinGetMaxIDFromDim derive(key_tgt = toInteger(key + MaxKey),",
 				"          active = 'Y',",
 				"          ef_end_dt = toTimestamp('9999-12-31 23:59:00')) ~> DeriveKeyActiveEndDT",
 				"DeriveKeyActiveEndDT select(mapColumn(",
-				"          src_emp_id,",
-				"          src_fname,",
-				"          src_lname,",
-				"          src_DOB,",
-				"          src_salary,",
-				"          src_mobile,",
-				"          src_gender,",
-				"          src_address,",
-				"          src_city,",
-				"          src_created_dt,",
-				"          src_last_update_date,",
-				"          key_tgt,",
-				"          is_active = active,",
+				"          key = key_tgt,",
+				"          emp_id = src_emp_id,",
+				"          fname = src_fname,",
+				"          lname = src_lname,",
+				"          DOB = src_DOB,",
+				"          mobile = src_mobile,",
+				"          gender = src_gender,",
+				"          address = src_address,",
+				"          city = src_city,",
+				"          Is_active = active,",
+				"          create_dt = src_created_dt,",
+				"          ef_start_dt = src_last_update_date,",
 				"          eff_end_dt = ef_end_dt",
 				"     ),",
 				"     skipDuplicateMapInputs: true,",
@@ -173,7 +183,7 @@
 				"exists3 derive(active = 'N',",
 				"          ef_end_dt = currentTimestamp()) ~> MakeActiveandEnddt",
 				"MakeActiveandEnddt select(mapColumn(",
-				"          emp_key,",
+				"          key = emp_key,",
 				"          emp_id,",
 				"          fname,",
 				"          lname,",
@@ -189,7 +199,34 @@
 				"     ),",
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true) ~> RequireCols",
-				"RequireCols alterRow(updateIf(true())) ~> UpdateRows"
+				"RequireCols alterRow(updateIf(true())) ~> UpdateRows",
+				"MarkAsInsert, UpdateRows union(byName: true)~> unionInsertUpdateRows",
+				"unionInsertUpdateRows sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          emp_key as integer,",
+				"          emp_id as integer,",
+				"          fname as string,",
+				"          lname as string,",
+				"          DOB as date,",
+				"          mobile as string,",
+				"          gender as string,",
+				"          address as string,",
+				"          city as string,",
+				"          Is_active as string,",
+				"          create_dt as timestamp,",
+				"          ef_start_dt as timestamp,",
+				"          ef_end_dt as timestamp",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:true,",
+				"     upsertable:false,",
+				"     keys:['key'],",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError') ~> sink1"
 			]
 		}
 	}

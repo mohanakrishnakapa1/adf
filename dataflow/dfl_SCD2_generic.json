@@ -226,7 +226,22 @@
 				"     format: 'table',",
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true,",
-				"     errorHandlingOption: 'stopOnFirstError') ~> sink1"
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          emp_key = key,",
+				"          emp_id,",
+				"          fname,",
+				"          lname,",
+				"          DOB,",
+				"          mobile,",
+				"          gender,",
+				"          address,",
+				"          city,",
+				"          Is_active,",
+				"          create_dt,",
+				"          ef_start_dt,",
+				"          ef_end_dt = eff_end_dt",
+				"     )) ~> sink1"
 			]
 		}
 	}

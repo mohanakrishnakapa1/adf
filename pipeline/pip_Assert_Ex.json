@@ -15,6 +15,18 @@
 				},
 				"userProperties": [],
 				"typeProperties": {
+					"dataflow": {
+						"referenceName": "Assert_ex",
+						"type": "DataFlowReference",
+						"datasetParameters": {
+							"source1": {
+								"Filename": "salesDateCorrupted-Assert.csv"
+							},
+							"sinkoutput": {
+								"File_Output": "Assert.csv"
+							}
+						}
+					},
 					"compute": {
 						"coreCount": 8,
 						"computeType": "General"

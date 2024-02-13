@@ -32,7 +32,12 @@
 			],
 			"scriptLines": [
 				"source(output(",
-				"          Column_1 as string",
+				"          id as integer,",
+				"          date as string,",
+				"          country as string,",
+				"          item as integer,",
+				"          qty as integer,",
+				"          price as integer",
 				"     ),",
 				"     allowSchemaDrift: true,",
 				"     validateSchema: false,",
@@ -41,7 +46,9 @@
 				"assertfiltercountry sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     skipDuplicateMapInputs: true,",
-				"     skipDuplicateMapOutputs: true) ~> sinkoutput"
+				"     skipDuplicateMapOutputs: true,",
+				"     outputAssertFailedRows: true,",
+				"     assertFailure_container: 'error') ~> sinkoutput"
 			]
 		}
 	}

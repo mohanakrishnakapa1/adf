@@ -1054,6 +1054,711 @@
 			"dependsOn": []
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/dfl_SCD2')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"folder": {
+					"name": "SCD2"
+				},
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "Param_Src",
+								"type": "DatasetReference"
+							},
+							"name": "srcemployeesrc"
+						},
+						{
+							"dataset": {
+								"referenceName": "Param_Table",
+								"type": "DatasetReference"
+							},
+							"name": "srcTarget"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "Param_Table",
+								"type": "DatasetReference"
+							},
+							"name": "sink1"
+						},
+						{
+							"dataset": {
+								"referenceName": "Param_Table",
+								"type": "DatasetReference"
+							},
+							"name": "sinkU"
+						}
+					],
+					"transformations": [
+						{
+							"name": "lookup1"
+						},
+						{
+							"name": "derivedColumn1"
+						},
+						{
+							"name": "splitCheck"
+						},
+						{
+							"name": "select1",
+							"description": "Renaming srcemployeesrc to select1 with columns 'src_emp_id, src_fname, lname, DOB, salary, mobile, gender, address, city, created_dt, last_update_date'"
+						},
+						{
+							"name": "alterRow1"
+						},
+						{
+							"name": "alterRow2"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          emp_id as integer,",
+						"          fname as string,",
+						"          lname as string,",
+						"          DOB as date,",
+						"          salary as double,",
+						"          mobile as string,",
+						"          gender as string,",
+						"          address as string,",
+						"          city as string,",
+						"          created_dt as timestamp,",
+						"          last_update_date as timestamp",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     isolationLevel: 'READ_UNCOMMITTED',",
+						"     format: 'table') ~> srcemployeesrc",
+						"source(output(",
+						"          emp_key as integer,",
+						"          emp_id as integer,",
+						"          fname as string,",
+						"          lname as string,",
+						"          DOB as date,",
+						"          mobile as string,",
+						"          gender as string,",
+						"          address as string,",
+						"          city as string,",
+						"          Is_active as string,",
+						"          create_dt as timestamp,",
+						"          ef_start_dt as timestamp,",
+						"          ef_end_dt as timestamp",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     isolationLevel: 'READ_UNCOMMITTED',",
+						"     format: 'table') ~> srcTarget",
+						"select1, srcTarget lookup(src_emp_id == emp_id,",
+						"     multiple: false,",
+						"     pickup: 'any',",
+						"     broadcast: 'auto')~> lookup1",
+						"lookup1 derive(is_active_Insert = 1,",
+						"          end_date = addDays(currentTimestamp(),9999),",
+						"          is_active_update = 0,",
+						"          curren_endDate = currentTimestamp()) ~> derivedColumn1",
+						"derivedColumn1 split(isNull(emp_key),",
+						"     disjoint: true) ~> splitCheck@(I, U)",
+						"srcemployeesrc select(mapColumn(",
+						"          src_emp_id = emp_id,",
+						"          src_fname = fname,",
+						"          src_lname = lname,",
+						"          src_DOB = DOB,",
+						"          src_salary = salary,",
+						"          src_mobile = mobile,",
+						"          src_gender = gender,",
+						"          src_address = address,",
+						"          src_city = city,",
+						"          src_created_dt = created_dt,",
+						"          src_last_update_date = last_update_date",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> select1",
+						"splitCheck@U alterRow(updateIf(1==1)) ~> alterRow1",
+						"splitCheck@I alterRow(insertIf(1==1)) ~> alterRow2",
+						"alterRow2 sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     input(",
+						"          emp_key as integer,",
+						"          emp_id as integer,",
+						"          fname as string,",
+						"          lname as string,",
+						"          DOB as date,",
+						"          mobile as string,",
+						"          gender as string,",
+						"          address as string,",
+						"          city as string,",
+						"          Is_active as string,",
+						"          create_dt as timestamp,",
+						"          ef_start_dt as timestamp,",
+						"          ef_end_dt as timestamp",
+						"     ),",
+						"     deletable:false,",
+						"     insertable:true,",
+						"     updateable:false,",
+						"     upsertable:false,",
+						"     format: 'table',",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     saveOrder: 2,",
+						"     errorHandlingOption: 'stopOnFirstError',",
+						"     mapColumn(",
+						"          emp_id = src_emp_id,",
+						"          fname = src_fname,",
+						"          lname = src_lname,",
+						"          DOB = src_DOB,",
+						"          mobile = src_mobile,",
+						"          gender = src_gender,",
+						"          address = src_address,",
+						"          city = src_city,",
+						"          Is_active = is_active_Insert,",
+						"          ef_start_dt = src_last_update_date,",
+						"          create_dt = src_created_dt,",
+						"          ef_end_dt = end_date",
+						"     )) ~> sink1",
+						"alterRow1 sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     input(",
+						"          emp_key as integer,",
+						"          emp_id as integer,",
+						"          fname as string,",
+						"          lname as string,",
+						"          DOB as date,",
+						"          mobile as string,",
+						"          gender as string,",
+						"          address as string,",
+						"          city as string,",
+						"          Is_active as string,",
+						"          create_dt as timestamp,",
+						"          ef_start_dt as timestamp,",
+						"          ef_end_dt as timestamp",
+						"     ),",
+						"     deletable:false,",
+						"     insertable:false,",
+						"     updateable:true,",
+						"     upsertable:false,",
+						"     keys:['emp_key'],",
+						"     format: 'table',",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     saveOrder: 1,",
+						"     errorHandlingOption: 'stopOnFirstError',",
+						"     mapColumn(",
+						"          emp_id,",
+						"          fname,",
+						"          lname,",
+						"          DOB,",
+						"          mobile,",
+						"          gender,",
+						"          address,",
+						"          city,",
+						"          Is_active = is_active_update,",
+						"          create_dt,",
+						"          ef_start_dt,",
+						"          ef_end_dt = curren_endDate,",
+						"          emp_key",
+						"     )) ~> sinkU"
+					]
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/dfl_SCD2_generic')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"folder": {
+					"name": "SCD2"
+				},
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "Param_Src",
+								"type": "DatasetReference"
+							},
+							"name": "srcemployeesrc"
+						},
+						{
+							"dataset": {
+								"referenceName": "Param_Table",
+								"type": "DatasetReference"
+							},
+							"name": "srcTarget"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "Param_Table",
+								"type": "DatasetReference"
+							},
+							"name": "sink1"
+						}
+					],
+					"transformations": [
+						{
+							"name": "select1",
+							"description": "Renaming srcemployeesrc to select1 with columns 'src_emp_id, src_fname, lname, DOB, salary, mobile, gender, address, city, created_dt, last_update_date'"
+						},
+						{
+							"name": "derivedMd5Hash"
+						},
+						{
+							"name": "filter1"
+						},
+						{
+							"name": "exists1"
+						},
+						{
+							"name": "AddKey"
+						},
+						{
+							"name": "JoinGetMaxIDFromDim"
+						},
+						{
+							"name": "AddTgtMD5Hash"
+						},
+						{
+							"name": "GetMaxId"
+						},
+						{
+							"name": "DeriveKeyActiveEndDT"
+						},
+						{
+							"name": "SelectNecessaryCol"
+						},
+						{
+							"name": "MarkAsInsert"
+						},
+						{
+							"name": "exists3"
+						},
+						{
+							"name": "MakeActiveandEnddt"
+						},
+						{
+							"name": "RequireCols"
+						},
+						{
+							"name": "UpdateRows"
+						},
+						{
+							"name": "unionInsertUpdateRows"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          emp_id as integer,",
+						"          fname as string,",
+						"          lname as string,",
+						"          DOB as date,",
+						"          salary as double,",
+						"          mobile as string,",
+						"          gender as string,",
+						"          address as string,",
+						"          city as string,",
+						"          created_dt as timestamp,",
+						"          last_update_date as timestamp",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     isolationLevel: 'READ_UNCOMMITTED',",
+						"     format: 'table') ~> srcemployeesrc",
+						"source(output(",
+						"          emp_key as integer,",
+						"          emp_id as integer,",
+						"          fname as string,",
+						"          lname as string,",
+						"          DOB as date,",
+						"          mobile as string,",
+						"          gender as string,",
+						"          address as string,",
+						"          city as string,",
+						"          Is_active as string,",
+						"          create_dt as timestamp,",
+						"          ef_start_dt as timestamp,",
+						"          ef_end_dt as timestamp",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     isolationLevel: 'READ_UNCOMMITTED',",
+						"     format: 'table') ~> srcTarget",
+						"srcemployeesrc select(mapColumn(",
+						"          src_emp_id = emp_id,",
+						"          src_fname = fname,",
+						"          src_lname = lname,",
+						"          src_DOB = DOB,",
+						"          src_salary = salary,",
+						"          src_mobile = mobile,",
+						"          src_gender = gender,",
+						"          src_address = address,",
+						"          src_city = city,",
+						"          src_created_dt = created_dt,",
+						"          src_last_update_date = last_update_date",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> select1",
+						"select1 derive(md_hash = md5(src_mobile,src_address,src_city)) ~> derivedMd5Hash",
+						"srcTarget filter(Is_active == 'Y') ~> filter1",
+						"derivedMd5Hash, AddTgtMD5Hash exists(src_emp_id == emp_id",
+						"     && md_hash == md_tgt_hash,",
+						"     negate:true,",
+						"     broadcast: 'auto')~> exists1",
+						"exists1 keyGenerate(output(key as long),",
+						"     startAt: 1L,",
+						"     stepValue: 1L) ~> AddKey",
+						"AddKey, GetMaxId join(true(),",
+						"     joinType:'cross',",
+						"     matchType:'exact',",
+						"     ignoreSpaces: false,",
+						"     broadcast: 'auto')~> JoinGetMaxIDFromDim",
+						"filter1 derive(md_tgt_hash = md5(mobile,address,city)) ~> AddTgtMD5Hash",
+						"AddTgtMD5Hash aggregate(MaxKey = max(emp_key)) ~> GetMaxId",
+						"JoinGetMaxIDFromDim derive(key_tgt = toInteger(key + MaxKey),",
+						"          active = 'Y',",
+						"          ef_end_dt = toTimestamp('9999-12-31 23:59:00')) ~> DeriveKeyActiveEndDT",
+						"DeriveKeyActiveEndDT select(mapColumn(",
+						"          key = key_tgt,",
+						"          emp_id = src_emp_id,",
+						"          fname = src_fname,",
+						"          lname = src_lname,",
+						"          DOB = src_DOB,",
+						"          mobile = src_mobile,",
+						"          gender = src_gender,",
+						"          address = src_address,",
+						"          city = src_city,",
+						"          Is_active = active,",
+						"          create_dt = src_created_dt,",
+						"          ef_start_dt = src_last_update_date,",
+						"          eff_end_dt = ef_end_dt",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> SelectNecessaryCol",
+						"SelectNecessaryCol alterRow(insertIf(true())) ~> MarkAsInsert",
+						"AddTgtMD5Hash, derivedMd5Hash exists(emp_id == src_emp_id,",
+						"     negate:false,",
+						"     broadcast: 'auto')~> exists3",
+						"exists3 derive(active = 'N',",
+						"          ef_end_dt = currentTimestamp()) ~> MakeActiveandEnddt",
+						"MakeActiveandEnddt select(mapColumn(",
+						"          key = emp_key,",
+						"          emp_id,",
+						"          fname,",
+						"          lname,",
+						"          DOB,",
+						"          mobile,",
+						"          gender,",
+						"          address,",
+						"          city,",
+						"          Is_active = active,",
+						"          create_dt,",
+						"          ef_start_dt,",
+						"          eff_end_dt = ef_end_dt",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> RequireCols",
+						"RequireCols alterRow(updateIf(true())) ~> UpdateRows",
+						"MarkAsInsert, UpdateRows union(byName: true)~> unionInsertUpdateRows",
+						"unionInsertUpdateRows sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     input(",
+						"          emp_key as integer,",
+						"          emp_id as integer,",
+						"          fname as string,",
+						"          lname as string,",
+						"          DOB as date,",
+						"          mobile as string,",
+						"          gender as string,",
+						"          address as string,",
+						"          city as string,",
+						"          Is_active as string,",
+						"          create_dt as timestamp,",
+						"          ef_start_dt as timestamp,",
+						"          ef_end_dt as timestamp",
+						"     ),",
+						"     deletable:false,",
+						"     insertable:true,",
+						"     updateable:true,",
+						"     upsertable:false,",
+						"     keys:['emp_key'],",
+						"     format: 'table',",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     errorHandlingOption: 'stopOnFirstError',",
+						"     mapColumn(",
+						"          emp_key = key,",
+						"          emp_id,",
+						"          fname,",
+						"          lname,",
+						"          DOB,",
+						"          mobile,",
+						"          gender,",
+						"          address,",
+						"          city,",
+						"          Is_active,",
+						"          create_dt,",
+						"          ef_start_dt,",
+						"          ef_end_dt = eff_end_dt",
+						"     )) ~> sink1"
+					]
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/dfl_SCD2_generic_withLastUpdatedt')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"folder": {
+					"name": "SCD2"
+				},
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "Param_Src",
+								"type": "DatasetReference"
+							},
+							"name": "srcemployeesrc"
+						},
+						{
+							"dataset": {
+								"referenceName": "Param_Table",
+								"type": "DatasetReference"
+							},
+							"name": "srcTarget"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "Param_Table",
+								"type": "DatasetReference"
+							},
+							"name": "sink1"
+						}
+					],
+					"transformations": [
+						{
+							"name": "select1",
+							"description": "Renaming srcemployeesrc to select1 with columns 'src_emp_id, src_fname, lname, DOB, salary, mobile, gender, address, city, created_dt, last_update_date'"
+						},
+						{
+							"name": "derivedMd5Hash"
+						},
+						{
+							"name": "filter1"
+						},
+						{
+							"name": "exists1"
+						},
+						{
+							"name": "AddKey"
+						},
+						{
+							"name": "JoinGetMaxIDFromDim"
+						},
+						{
+							"name": "AddTgtMD5Hash"
+						},
+						{
+							"name": "GetMaxId"
+						},
+						{
+							"name": "DeriveKeyActiveEndDT"
+						},
+						{
+							"name": "SelectNecessaryCol"
+						},
+						{
+							"name": "MarkAsInsert"
+						},
+						{
+							"name": "exists3"
+						},
+						{
+							"name": "MakeActiveandEnddt"
+						},
+						{
+							"name": "RequireCols"
+						},
+						{
+							"name": "UpdateRows"
+						},
+						{
+							"name": "unionInsertUpdateRows"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          emp_id as integer,",
+						"          fname as string,",
+						"          lname as string,",
+						"          DOB as date,",
+						"          salary as double,",
+						"          mobile as string,",
+						"          gender as string,",
+						"          address as string,",
+						"          city as string,",
+						"          created_dt as timestamp,",
+						"          last_update_date as timestamp",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     isolationLevel: 'READ_UNCOMMITTED',",
+						"     query: 'select * from employee_src\\nwhere last_update_date > DATEADD(day, +1, CURRENT_TIMESTAMP)',",
+						"     format: 'query') ~> srcemployeesrc",
+						"source(output(",
+						"          emp_key as integer,",
+						"          emp_id as integer,",
+						"          fname as string,",
+						"          lname as string,",
+						"          DOB as date,",
+						"          mobile as string,",
+						"          gender as string,",
+						"          address as string,",
+						"          city as string,",
+						"          Is_active as string,",
+						"          create_dt as timestamp,",
+						"          ef_start_dt as timestamp,",
+						"          ef_end_dt as timestamp",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     isolationLevel: 'READ_UNCOMMITTED',",
+						"     format: 'table') ~> srcTarget",
+						"srcemployeesrc select(mapColumn(",
+						"          src_emp_id = emp_id,",
+						"          src_fname = fname,",
+						"          src_lname = lname,",
+						"          src_DOB = DOB,",
+						"          src_salary = salary,",
+						"          src_mobile = mobile,",
+						"          src_gender = gender,",
+						"          src_address = address,",
+						"          src_city = city,",
+						"          src_created_dt = created_dt,",
+						"          src_last_update_date = last_update_date",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> select1",
+						"select1 derive(md_hash = md5(src_mobile,src_address,src_city)) ~> derivedMd5Hash",
+						"srcTarget filter(Is_active == 'Y') ~> filter1",
+						"derivedMd5Hash, AddTgtMD5Hash exists(src_emp_id == emp_id",
+						"     && md_hash == md_tgt_hash,",
+						"     negate:true,",
+						"     broadcast: 'auto')~> exists1",
+						"exists1 keyGenerate(output(key as long),",
+						"     startAt: 1L,",
+						"     stepValue: 1L) ~> AddKey",
+						"AddKey, GetMaxId join(true(),",
+						"     joinType:'cross',",
+						"     matchType:'exact',",
+						"     ignoreSpaces: false,",
+						"     broadcast: 'auto')~> JoinGetMaxIDFromDim",
+						"filter1 derive(md_tgt_hash = md5(mobile,address,city)) ~> AddTgtMD5Hash",
+						"AddTgtMD5Hash aggregate(MaxKey = max(emp_key)) ~> GetMaxId",
+						"JoinGetMaxIDFromDim derive(key_tgt = toInteger(key + MaxKey),",
+						"          active = 'Y',",
+						"          ef_end_dt = toTimestamp('9999-12-31 23:59:00')) ~> DeriveKeyActiveEndDT",
+						"DeriveKeyActiveEndDT select(mapColumn(",
+						"          key = key_tgt,",
+						"          emp_id = src_emp_id,",
+						"          fname = src_fname,",
+						"          lname = src_lname,",
+						"          DOB = src_DOB,",
+						"          mobile = src_mobile,",
+						"          gender = src_gender,",
+						"          address = src_address,",
+						"          city = src_city,",
+						"          Is_active = active,",
+						"          create_dt = src_created_dt,",
+						"          ef_start_dt = src_last_update_date,",
+						"          eff_end_dt = ef_end_dt",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> SelectNecessaryCol",
+						"SelectNecessaryCol alterRow(insertIf(true())) ~> MarkAsInsert",
+						"AddTgtMD5Hash, derivedMd5Hash exists(emp_id == src_emp_id,",
+						"     negate:false,",
+						"     broadcast: 'auto')~> exists3",
+						"exists3 derive(active = 'N',",
+						"          ef_end_dt = currentTimestamp()) ~> MakeActiveandEnddt",
+						"MakeActiveandEnddt select(mapColumn(",
+						"          key = emp_key,",
+						"          emp_id,",
+						"          fname,",
+						"          lname,",
+						"          DOB,",
+						"          mobile,",
+						"          gender,",
+						"          address,",
+						"          city,",
+						"          Is_active = active,",
+						"          create_dt,",
+						"          ef_start_dt,",
+						"          eff_end_dt = ef_end_dt",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> RequireCols",
+						"RequireCols alterRow(updateIf(true())) ~> UpdateRows",
+						"MarkAsInsert, UpdateRows union(byName: true)~> unionInsertUpdateRows",
+						"unionInsertUpdateRows sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     input(",
+						"          emp_key as integer,",
+						"          emp_id as integer,",
+						"          fname as string,",
+						"          lname as string,",
+						"          DOB as date,",
+						"          mobile as string,",
+						"          gender as string,",
+						"          address as string,",
+						"          city as string,",
+						"          Is_active as string,",
+						"          create_dt as timestamp,",
+						"          ef_start_dt as timestamp,",
+						"          ef_end_dt as timestamp",
+						"     ),",
+						"     deletable:false,",
+						"     insertable:true,",
+						"     updateable:true,",
+						"     upsertable:false,",
+						"     keys:['emp_key'],",
+						"     format: 'table',",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     errorHandlingOption: 'stopOnFirstError',",
+						"     mapColumn(",
+						"          emp_key = key,",
+						"          emp_id,",
+						"          fname,",
+						"          lname,",
+						"          DOB,",
+						"          mobile,",
+						"          gender,",
+						"          address,",
+						"          city,",
+						"          Is_active,",
+						"          create_dt,",
+						"          ef_start_dt,",
+						"          ef_end_dt = eff_end_dt",
+						"     )) ~> sink1"
+					]
+				}
+			},
+			"dependsOn": []
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/empdata_fixedlength')]",
 			"type": "Microsoft.DataFactory/factories/dataflows",
 			"apiVersion": "2018-06-01",
@@ -1209,218 +1914,174 @@
 			"dependsOn": []
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/dfl_SCD2')]",
+			"name": "[concat(parameters('factoryName'), '/Assert_ex')]",
 			"type": "Microsoft.DataFactory/factories/dataflows",
 			"apiVersion": "2018-06-01",
 			"properties": {
-				"folder": {
-					"name": "SCD2"
-				},
 				"type": "MappingDataFlow",
 				"typeProperties": {
 					"sources": [
 						{
 							"dataset": {
-								"referenceName": "Param_Src",
+								"referenceName": "DelimitedDataset_Param",
 								"type": "DatasetReference"
 							},
-							"name": "srcemployeesrc"
-						},
-						{
-							"dataset": {
-								"referenceName": "Param_Table",
-								"type": "DatasetReference"
-							},
-							"name": "srcTarget"
+							"name": "source1"
 						}
 					],
 					"sinks": [
 						{
 							"dataset": {
-								"referenceName": "Param_Table",
+								"referenceName": "Param_Delimited_Output",
 								"type": "DatasetReference"
 							},
-							"name": "sink1"
-						},
-						{
-							"dataset": {
-								"referenceName": "Param_Table",
-								"type": "DatasetReference"
-							},
-							"name": "sinkU"
+							"name": "sinkoutput",
+							"rejectedDataLinkedService": {
+								"referenceName": "AzureBlobStorage1",
+								"type": "LinkedServiceReference"
+							}
 						}
 					],
 					"transformations": [
 						{
-							"name": "lookup1"
-						},
-						{
-							"name": "derivedColumn1"
-						},
-						{
-							"name": "splitCheck"
-						},
-						{
-							"name": "select1",
-							"description": "Renaming srcemployeesrc to select1 with columns 'src_emp_id, src_fname, lname, DOB, salary, mobile, gender, address, city, created_dt, last_update_date'"
-						},
-						{
-							"name": "alterRow1"
-						},
-						{
-							"name": "alterRow2"
+							"name": "assertfiltercountry"
 						}
 					],
 					"scriptLines": [
 						"source(output(",
-						"          emp_id as integer,",
-						"          fname as string,",
-						"          lname as string,",
-						"          DOB as date,",
-						"          salary as double,",
-						"          mobile as string,",
-						"          gender as string,",
-						"          address as string,",
-						"          city as string,",
-						"          created_dt as timestamp,",
-						"          last_update_date as timestamp",
+						"          id as integer,",
+						"          date as string,",
+						"          country as string,",
+						"          item as integer,",
+						"          qty as integer,",
+						"          price as integer",
 						"     ),",
 						"     allowSchemaDrift: true,",
 						"     validateSchema: false,",
-						"     isolationLevel: 'READ_UNCOMMITTED',",
-						"     format: 'table') ~> srcemployeesrc",
-						"source(output(",
-						"          emp_key as integer,",
-						"          emp_id as integer,",
-						"          fname as string,",
-						"          lname as string,",
-						"          DOB as date,",
-						"          mobile as string,",
-						"          gender as string,",
-						"          address as string,",
-						"          city as string,",
-						"          Is_active as string,",
-						"          create_dt as timestamp,",
-						"          ef_start_dt as timestamp,",
-						"          ef_end_dt as timestamp",
-						"     ),",
-						"     allowSchemaDrift: true,",
+						"     ignoreNoFilesFound: false) ~> source1",
+						"source1 assert(expectTrue(!isNull(country), false, 'assertcountry', null, \"ThisColumnshouldbenotnull\")) ~> assertfiltercountry",
+						"assertfiltercountry sink(allowSchemaDrift: true,",
 						"     validateSchema: false,",
-						"     isolationLevel: 'READ_UNCOMMITTED',",
-						"     format: 'table') ~> srcTarget",
-						"select1, srcTarget lookup(src_emp_id == emp_id,",
-						"     multiple: false,",
-						"     pickup: 'any',",
-						"     broadcast: 'auto')~> lookup1",
-						"lookup1 derive(is_active_Insert = 1,",
-						"          end_date = addDays(currentTimestamp(),9999),",
-						"          is_active_update = 0,",
-						"          curren_endDate = currentTimestamp()) ~> derivedColumn1",
-						"derivedColumn1 split(isNull(emp_key),",
-						"     disjoint: true) ~> splitCheck@(I, U)",
-						"srcemployeesrc select(mapColumn(",
-						"          src_emp_id = emp_id,",
-						"          src_fname = fname,",
-						"          src_lname = lname,",
-						"          src_DOB = DOB,",
-						"          src_salary = salary,",
-						"          src_mobile = mobile,",
-						"          src_gender = gender,",
-						"          src_address = address,",
-						"          src_city = city,",
-						"          src_created_dt = created_dt,",
-						"          src_last_update_date = last_update_date",
-						"     ),",
-						"     skipDuplicateMapInputs: true,",
-						"     skipDuplicateMapOutputs: true) ~> select1",
-						"splitCheck@U alterRow(updateIf(1==1)) ~> alterRow1",
-						"splitCheck@I alterRow(insertIf(1 == 1)) ~> alterRow2",
-						"alterRow2 sink(allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     input(",
-						"          emp_key as integer,",
-						"          emp_id as integer,",
-						"          fname as string,",
-						"          lname as string,",
-						"          DOB as date,",
-						"          mobile as string,",
-						"          gender as string,",
-						"          address as string,",
-						"          city as string,",
-						"          Is_active as string,",
-						"          create_dt as timestamp,",
-						"          ef_start_dt as timestamp,",
-						"          ef_end_dt as timestamp",
-						"     ),",
-						"     deletable:false,",
-						"     insertable:true,",
-						"     updateable:false,",
-						"     upsertable:false,",
-						"     format: 'table',",
 						"     skipDuplicateMapInputs: true,",
 						"     skipDuplicateMapOutputs: true,",
-						"     saveOrder: 2,",
-						"     errorHandlingOption: 'stopOnFirstError',",
-						"     mapColumn(",
-						"          emp_id = src_emp_id,",
-						"          fname = src_fname,",
-						"          lname = src_lname,",
-						"          DOB = src_DOB,",
-						"          mobile = src_mobile,",
-						"          gender = src_gender,",
-						"          address = src_address,",
-						"          city = src_city,",
-						"          Is_active = is_active_Insert,",
-						"          ef_start_dt = src_last_update_date,",
-						"          create_dt = src_created_dt,",
-						"          ef_end_dt = end_date",
-						"     )) ~> sink1",
-						"alterRow1 sink(allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     input(",
-						"          emp_key as integer,",
-						"          emp_id as integer,",
-						"          fname as string,",
-						"          lname as string,",
-						"          DOB as date,",
-						"          mobile as string,",
-						"          gender as string,",
-						"          address as string,",
-						"          city as string,",
-						"          Is_active as string,",
-						"          create_dt as timestamp,",
-						"          ef_start_dt as timestamp,",
-						"          ef_end_dt as timestamp",
-						"     ),",
-						"     deletable:false,",
-						"     insertable:false,",
-						"     updateable:true,",
-						"     upsertable:false,",
-						"     keys:['emp_key'],",
-						"     format: 'table',",
-						"     skipDuplicateMapInputs: true,",
-						"     skipDuplicateMapOutputs: true,",
-						"     saveOrder: 1,",
-						"     errorHandlingOption: 'stopOnFirstError',",
-						"     mapColumn(",
-						"          emp_id,",
-						"          fname,",
-						"          lname,",
-						"          DOB,",
-						"          mobile,",
-						"          gender,",
-						"          address,",
-						"          city,",
-						"          Is_active = is_active_update,",
-						"          create_dt,",
-						"          ef_start_dt,",
-						"          ef_end_dt = curren_endDate,",
-						"          emp_key",
-						"     )) ~> sinkU"
+						"     outputAssertFailedRows: true,",
+						"     assertFailure_container: 'error') ~> sinkoutput"
 					]
 				}
 			},
 			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/SCD2_Generic')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Df_SCD2",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "dfl_SCD2_generic",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"srcemployeesrc": {
+										"Tal_Source": "employee_src"
+									},
+									"srcTarget": {
+										"Tab_Name_Tgt": "employee_dim"
+									},
+									"sink1": {
+										"Tab_Name_Tgt": "employee_dim"
+									}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"folder": {
+					"name": "SCD"
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/dataflows/dfl_SCD2_generic')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/SCD2_Generic_LastUpdate')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "DataSCDLastupdate",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "dfl_SCD2_generic_withLastUpdatedt",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"srcemployeesrc": {
+										"Tal_Source": "employee_src"
+									},
+									"srcTarget": {
+										"Tab_Name_Tgt": "employee_dim"
+									},
+									"sink1": {
+										"Tab_Name_Tgt": "employee_dim"
+									}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"folder": {
+					"name": "SCD"
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/dataflows/dfl_SCD2_generic_withLastUpdatedt')]"
+			]
 		},
 		{
 			"name": "[concat(parameters('factoryName'), '/ToFilterBadRecords')]",
@@ -1627,65 +2288,6 @@
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/dataflows/scdtype1_usingalterrow')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/pip_scd2')]",
-			"type": "Microsoft.DataFactory/factories/pipelines",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"activities": [
-					{
-						"name": "Dt_flow_scd2",
-						"type": "ExecuteDataFlow",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "0.12:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"dataflow": {
-								"referenceName": "dfl_SCD2",
-								"type": "DataFlowReference",
-								"parameters": {},
-								"datasetParameters": {
-									"srcemployeesrc": {
-										"Tal_Source": "employee_src"
-									},
-									"srcTarget": {
-										"Tab_Name_Tgt": "employee_dim"
-									},
-									"sink1": {
-										"Tab_Name_Tgt": "employee_dim"
-									},
-									"sinkU": {
-										"Tab_Name_Tgt": "employee_dim"
-									}
-								}
-							},
-							"staging": {},
-							"compute": {
-								"coreCount": 8,
-								"computeType": "General"
-							},
-							"traceLevel": "Fine"
-						}
-					}
-				],
-				"policy": {
-					"elapsedTimeMetric": {}
-				},
-				"folder": {
-					"name": "SCD"
-				},
-				"annotations": []
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/dataflows/dfl_SCD2')]"
 			]
 		}
 	]

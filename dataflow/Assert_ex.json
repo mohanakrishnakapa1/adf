@@ -45,6 +45,7 @@
 				"source1 assert(expectTrue(!isNull(country), false, 'assertcountry', null, \"ThisColumnshouldbenotnull\")) ~> assertfiltercountry",
 				"assertfiltercountry sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
+				"     partitionFileNames:['assert.csv'],",
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true,",
 				"     outputAssertFailedRows: true,",
